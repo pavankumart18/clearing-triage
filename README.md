@@ -62,4 +62,4 @@ Vanilla HTML, CSS, and JavaScript. One file, no dependencies, no build step. The
 
 ## Licence
 
-For demonstration purposes. Get in touch before reusing the agent prompt or visual design in production.
+MIT — see [`LICENSE`](./LICENSE).
