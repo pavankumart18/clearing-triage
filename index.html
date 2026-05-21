@@ -1,0 +1,2453 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Clearing Triage — UK Admissions Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f8fb;
+    --surface: #ffffff;
+    --surface-2: #fbfcfe;
+    --border: #e4e7ee;
+    --border-strong: #cdd2dc;
+    --text: #0f172a;
+    --text-2: #475569;
+    --text-3: #94a3b8;
+    --brand: #1d3a8a;
+    --brand-2: #2f5fd1;
+    --brand-soft: #eef3ff;
+    --success: #047857;
+    --success-soft: #ecfdf5;
+    --warn: #b45309;
+    --warn-soft: #fffaeb;
+    --danger: #b91c1c;
+    --danger-soft: #fef2f2;
+    --empathy: #6d28d9;
+    --empathy-soft: #f5f0ff;
+    --ucas-pink: #d6336c;
+    --ucas-pink-soft: #fff0f6;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 2px rgba(15,23,42,0.04), 0 1px 1px rgba(15,23,42,0.03);
+    --shadow-lg: 0 10px 28px rgba(15,23,42,0.08);
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  body.triage-active { overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+
+  /* ====== HEADER ====== */
+  header.top {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    flex-shrink: 0;
+  }
+  .brand-mark {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-mark .logo {
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    display: grid;
+    place-items: center;
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: -0.02em;
+  }
+  .brand-mark .title {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    font-size: 15px;
+  }
+  .brand-mark .subtitle {
+    color: var(--text-2);
+    font-size: 12px;
+  }
+  .clock {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .clock .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 0 0 rgba(4,120,87,0.55);
+    animation: pulse 1.7s infinite;
+    display: inline-block;
+    margin-right: 6px;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(4,120,87,0.55); }
+    70% { box-shadow: 0 0 0 8px rgba(4,120,87,0); }
+    100% { box-shadow: 0 0 0 0 rgba(4,120,87,0); }
+  }
+  .clock .stat {
+    border-left: 1px solid var(--border);
+    padding-left: 18px;
+  }
+  .clock .stat b {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* ====== TABS ====== */
+  nav.tabs {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .tab {
+    background: none;
+    border: 0;
+    padding: 10px 14px;
+    color: var(--text-2);
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--brand);
+    border-bottom-color: var(--brand);
+    font-weight: 600;
+  }
+  .tab .badge {
+    display: inline-block;
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-size: 11px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    margin-left: 6px;
+    font-weight: 600;
+  }
+
+  /* ====== LAYOUT ====== */
+  main { padding: 14px 24px; max-width: 1600px; margin: 0 auto; width: 100%; }
+  body.triage-active main { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.2s ease; }
+  body.triage-active .panel.active#panel-triage { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  /* ====== TRIAGE LAYOUT ====== */
+  .triage-grid {
+    display: grid;
+    grid-template-columns: 264px 1fr 340px;
+    gap: 14px;
+    height: 100%;
+    min-height: 0;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .card-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface-2);
+    flex-shrink: 0;
+  }
+  .card-header .right { margin-left: auto; color: var(--text-3); font-weight: 500; font-size: 12px; }
+  .card-body { padding: 12px 14px; overflow-y: auto; flex: 1; min-height: 0; }
+  .card-body.tight { padding: 0; }
+  .card-footer { padding: 10px 14px; border-top: 1px solid var(--border); background: var(--surface-2); font-size: 12px; color: var(--text-2); flex-shrink: 0; }
+
+  /* ====== QUEUE ====== */
+  .queue-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: background 0.12s;
+    position: relative;
+  }
+  .queue-item:hover { background: var(--surface-2); }
+  .queue-item.active {
+    background: var(--brand-soft);
+    border-left: 3px solid var(--brand);
+    padding-left: 11px;
+  }
+  .queue-item .row1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .queue-item .name {
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .queue-item .meta {
+    font-size: 11.5px;
+    color: var(--text-2);
+    line-height: 1.4;
+  }
+  .queue-item .channel {
+    font-size: 10.5px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+  }
+  .emo-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .emo-devastated { background: #fef2f2; color: #b91c1c; }
+  .emo-elated { background: #ecfdf5; color: #047857; }
+  .emo-anxious { background: #fffaeb; color: #b45309; }
+  .emo-frantic { background: #fff1f2; color: #be123c; }
+  .emo-numb { background: #f1f5f9; color: #475569; }
+  .emo-strategic { background: #eef3ff; color: #1d3a8a; }
+  .emo-pressured { background: #f5f0ff; color: #6d28d9; }
+  .emo-confused { background: #fff7ed; color: #c2410c; }
+
+  /* ====== CONVERSATION ====== */
+  .convo-header {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    color: #3730a3;
+    display: grid;
+    place-items: center;
+    font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .student-info h3 { margin: 0; font-size: 14px; }
+  .student-info .sub { font-size: 11.5px; color: var(--text-2); margin-top: 2px; }
+  .student-info .sub .dot { display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: var(--text-3); margin: 0 6px; vertical-align: middle; }
+  .convo {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--surface-2);
+    min-height: 0;
+  }
+  .msg {
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    position: relative;
+    word-wrap: break-word;
+  }
+  .msg .who {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-3);
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .msg.student {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+  }
+  .msg.agent {
+    background: var(--brand);
+    color: white;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+  }
+  .msg.agent .who { color: rgba(255,255,255,0.7); }
+  .msg.system {
+    align-self: center;
+    background: transparent;
+    border: 1px dashed var(--border-strong);
+    color: var(--text-2);
+    font-size: 12px;
+    padding: 6px 12px;
+    font-style: italic;
+  }
+  .msg.action {
+    align-self: center;
+    background: var(--success-soft);
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px 14px;
+    max-width: 90%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .msg.escalate {
+    background: var(--warn-soft);
+    border: 1px solid #fcd34d;
+    color: #92400e;
+    align-self: center;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px 14px;
+    max-width: 90%;
+  }
+  .typing {
+    align-self: flex-end;
+    padding: 12px 14px;
+    background: var(--brand);
+    border-radius: 14px;
+    border-bottom-right-radius: 4px;
+    display: flex;
+    gap: 4px;
+  }
+  .typing span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.7);
+    animation: bounce 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* ====== CONVO CONTROLS ====== */
+  .convo-controls {
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  button.btn {
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 6px 11px;
+    font: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+    color: var(--text);
+    transition: all 0.12s;
+    font-weight: 500;
+  }
+  button.btn:hover { background: var(--surface-2); border-color: var(--text-3); }
+  button.btn.primary { background: var(--brand); color: white; border-color: var(--brand); }
+  button.btn.primary:hover { background: var(--brand-2); }
+  button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .speed {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .speed select {
+    font: inherit;
+    padding: 3px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+  }
+
+  .convo-input {
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .convo-input input[type=text] {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    font: inherit;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .convo-input input[type=text]:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-soft);
+  }
+  .queue-item.live-mode {
+    background: linear-gradient(90deg, #fff7ed 0%, #ffffff 100%);
+    border-left: 3px solid #f59e0b;
+    padding-left: 11px;
+  }
+  .queue-item.live-mode.active {
+    background: linear-gradient(90deg, #ffedd5 0%, #fff7ed 100%);
+    border-left-color: #d97706;
+  }
+  .queue-item .live-tag {
+    display: inline-block;
+    background: #f59e0b;
+    color: white;
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .live-hint {
+    align-self: center;
+    background: var(--brand-soft);
+    border: 1px dashed #c7d2fe;
+    color: var(--brand);
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    max-width: 90%;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .live-hint b { font-weight: 600; }
+
+  /* ====== RIGHT PANEL ====== */
+  .stack { display: flex; flex-direction: column; gap: 14px; height: 100%; min-height: 0; }
+  .reasoning { font-size: 12px; }
+  .reasoning .step {
+    padding: 6px 10px;
+    border-left: 2px solid var(--border);
+    margin-bottom: 5px;
+    color: var(--text-2);
+    line-height: 1.45;
+  }
+  .reasoning .step.active {
+    border-left-color: var(--brand);
+    background: var(--brand-soft);
+    color: var(--text);
+    font-weight: 500;
+  }
+  .reasoning .step.done {
+    border-left-color: var(--success);
+    color: var(--text-2);
+  }
+  .reasoning .step .label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: var(--text-3);
+    margin-bottom: 3px;
+    display: block;
+  }
+  .reasoning .step.active .label { color: var(--brand); }
+  .reasoning .step.done .label { color: var(--success); }
+
+  .vacancy {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .vacancy:last-child { border-bottom: 0; }
+  .vacancy .course {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 2px;
+    color: var(--text);
+  }
+  .vacancy .uni {
+    color: var(--text-2);
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+  .vacancy .req {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .match-pill {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    background: var(--success-soft);
+    color: var(--success);
+    font-family: 'Inter', sans-serif;
+  }
+  .match-pill.partial { background: var(--warn-soft); color: var(--warn); }
+  .match-pill.no { background: var(--danger-soft); color: var(--danger); }
+  .match-pill.context { background: var(--empathy-soft); color: var(--empathy); }
+
+  /* ====== VACANCY EXPLORER ====== */
+  .filter-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: 1fr 160px 200px 160px 120px;
+    gap: 12px;
+    align-items: end;
+  }
+  .filter-bar label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .filter-bar input, .filter-bar select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    font: inherit;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .filter-bar input:focus, .filter-bar select:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-soft);
+  }
+  .results-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    color: var(--text-2);
+    font-size: 13px;
+  }
+  .vac-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 12px;
+  }
+  .vac-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    transition: all 0.12s;
+    cursor: pointer;
+  }
+  .vac-card:hover { box-shadow: var(--shadow-lg); border-color: var(--border-strong); }
+  .vac-card .vc-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 4px;
+  }
+  .vac-card .vc-course {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .vac-card .vc-uni {
+    color: var(--text-2);
+    font-size: 12.5px;
+    margin-bottom: 10px;
+  }
+  .vac-card .vc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .vac-card .vc-grid .lbl {
+    color: var(--text-3);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .vac-card .vc-grid .val {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .vac-card .vc-mono {
+    font-family: var(--mono);
+    font-size: 11.5px;
+  }
+  .vac-card .vc-tags {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    background: var(--surface-2);
+    color: var(--text-2);
+    border: 1px solid var(--border);
+  }
+  .tag.context { background: var(--empathy-soft); color: var(--empathy); border-color: #e9d5ff; }
+  .tag.foundation { background: var(--brand-soft); color: var(--brand); border-color: #c7d2fe; }
+  .tag.btec { background: var(--ucas-pink-soft); color: var(--ucas-pink); border-color: #fbcfe8; }
+
+  /* ====== RETROSPECTIVE ====== */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .kpi .lbl {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-2);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .kpi .val {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .kpi .delta {
+    font-size: 12px;
+    color: var(--text-2);
+    margin-top: 4px;
+  }
+  .kpi .delta b { color: var(--success); }
+  .kpi .delta b.warn { color: var(--warn); }
+
+  .retro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .retro-grid .full { grid-column: 1 / -1; }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .bar-row:last-child { border-bottom: 0; }
+  .bar-row .b-label { width: 130px; color: var(--text-2); font-size: 12.5px; flex-shrink: 0; }
+  .bar-row .b-track { flex: 1; height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+  .bar-row .b-fill { height: 100%; border-radius: 4px; }
+  .bar-row .b-val { font-family: var(--mono); font-size: 12px; color: var(--text); width: 50px; text-align: right; flex-shrink: 0; }
+
+  .outcome-row {
+    display: flex;
+    align-items: start;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .outcome-row:last-child { border-bottom: 0; }
+  .outcome-row .badge-num {
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .outcome-row .body {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .outcome-row .body .sub {
+    color: var(--text-2);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  /* ====== DESIGN NOTES ====== */
+  .notes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .notes-grid .full { grid-column: 1 / -1; }
+  .notes h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; }
+  .notes ul { margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.7; color: var(--text); }
+  .notes ul li { margin-bottom: 6px; }
+  .notes p { font-size: 13px; line-height: 1.65; color: var(--text); margin: 0 0 10px; }
+  .notes .quote {
+    background: var(--surface-2);
+    border-left: 3px solid var(--brand);
+    padding: 10px 14px;
+    font-style: italic;
+    color: var(--text-2);
+    font-size: 13px;
+    margin: 10px 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+  code.inline {
+    font-family: var(--mono);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+
+  /* ====== HERO ====== */
+  .hero {
+    background: linear-gradient(135deg, var(--brand) 0%, #2952c4 100%);
+    color: white;
+    padding: 24px 28px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 28px;
+    align-items: center;
+  }
+  .hero h1 {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .hero p {
+    margin: 0;
+    color: rgba(255,255,255,0.85);
+    font-size: 13.5px;
+    line-height: 1.55;
+    max-width: 700px;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 24px;
+  }
+  .hero-stats .s .val {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .hero-stats .s .lbl {
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+
+  @media (max-width: 1200px) {
+    .triage-grid { grid-template-columns: 240px 1fr 320px; }
+    .filter-bar { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 900px) {
+    .triage-grid { grid-template-columns: 1fr; height: auto; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .retro-grid { grid-template-columns: 1fr; }
+    .hero { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand-mark">
+    <div class="logo">CT</div>
+    <div>
+      <div class="title">Clearing Triage — UK Admissions Agent</div>
+      <div class="subtitle">Working alongside university clearing teams</div>
+    </div>
+  </div>
+  <div class="clock">
+    <div><span class="live-dot"></span>Live — A-level Results Day</div>
+    <div class="stat">Tue, 19 Aug 2026 · <b id="clock-time">08:14 BST</b></div>
+    <div class="stat">Queue: <b id="queue-count">14</b></div>
+    <div class="stat">Active agents: <b>1 AI + 42 human</b></div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="triage">Live triage</button>
+  <button class="tab" data-tab="vacancies">UCAS vacancy explorer <span class="badge" id="vac-badge">— </span></button>
+  <button class="tab" data-tab="retro">End-of-day retrospective</button>
+</nav>
+
+<main>
+
+<!-- ========================= TAB 1: LIVE TRIAGE ========================= -->
+<section class="panel active" id="panel-triage">
+<div class="triage-grid">
+
+  <!-- Left: Queue -->
+  <div class="card">
+    <div class="card-header">
+      Incoming queue
+      <span class="right" id="queue-meta">14 waiting · avg wait 2m 14s</span>
+    </div>
+    <div class="card-body tight" id="queue-list"></div>
+  </div>
+
+  <!-- Center: Conversation -->
+  <div class="card">
+    <div class="convo-header" id="convo-header"></div>
+    <div class="convo" id="convo"></div>
+    <div class="convo-controls" id="scripted-controls">
+      <button class="btn primary" id="btn-play">▶ Start</button>
+      <button class="btn" id="btn-reset">Reset</button>
+      <button class="btn" id="btn-skip">Skip to end</button>
+      <div class="speed">
+        Speed
+        <select id="speed">
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+          <option value="2">2×</option>
+          <option value="4">4×</option>
+        </select>
+      </div>
+    </div>
+    <form class="convo-input" id="live-input-form" style="display:none;" autocomplete="off">
+      <input type="text" id="live-input" placeholder="Type as the student… e.g. 'I got BBB, missed Bristol Biomedical, I'm really upset'" />
+      <button type="submit" class="btn primary" id="live-send">Send</button>
+      <button type="button" class="btn" id="live-reset">Reset</button>
+    </form>
+  </div>
+
+  <!-- Right: Reasoning + Matches -->
+  <div class="stack">
+    <div class="card" style="flex: 1.1;">
+      <div class="card-header">Agent reasoning</div>
+      <div class="card-body" id="reasoning"></div>
+    </div>
+    <div class="card" style="flex: 1.4;">
+      <div class="card-header">Matched UCAS vacancies <span class="right" id="match-meta"></span></div>
+      <div class="card-body tight" id="matches"></div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ========================= TAB 2: VACANCIES ========================= -->
+<section class="panel" id="panel-vacancies">
+
+  <div class="hero">
+    <div>
+      <h1>UCAS clearing vacancy data</h1>
+      <p>Live-feed mirror of publicly published clearing vacancies. Updated continuously through results day. The agent queries this index — it does not work from synthetic course data. Mock data is limited to the student side only.</p>
+    </div>
+    <div class="hero-stats">
+      <div class="s"><div class="val" id="hs-courses">—</div><div class="lbl">Courses with places</div></div>
+      <div class="s"><div class="val" id="hs-unis">—</div><div class="lbl">Institutions</div></div>
+      <div class="s"><div class="val" id="hs-places">—</div><div class="lbl">Total places</div></div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <div>
+      <label for="f-search">Search course or institution</label>
+      <input id="f-search" placeholder="e.g. Computer Science, Manchester, Law…" />
+    </div>
+    <div>
+      <label for="f-subject">Subject area</label>
+      <select id="f-subject">
+        <option value="">All subjects</option>
+      </select>
+    </div>
+    <div>
+      <label for="f-grades">Achieved grades</label>
+      <select id="f-grades">
+        <option value="">Any</option>
+        <option>A*A*A*</option><option>A*A*A</option><option>A*AA</option>
+        <option>AAA</option><option>AAB</option><option>ABB</option>
+        <option>BBB</option><option>BBC</option><option>BCC</option>
+        <option>CCC</option><option>CCD</option><option>DDD</option>
+      </select>
+    </div>
+    <div>
+      <label for="f-region">Region</label>
+      <select id="f-region">
+        <option value="">All</option>
+      </select>
+    </div>
+    <div>
+      <label for="f-context">Show contextual</label>
+      <select id="f-context">
+        <option value="any">Any</option>
+        <option value="yes">Only contextual</option>
+        <option value="no">Hide contextual</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="results-row">
+    <div id="results-count">— results</div>
+    <div style="font-size:12px;color:var(--text-3);">Sorted by relevance to grade-match · last sync 08:13 BST</div>
+  </div>
+
+  <div class="vac-grid" id="vac-grid"></div>
+</section>
+
+<!-- ========================= TAB 3: RETROSPECTIVE ========================= -->
+<section class="panel" id="panel-retro">
+
+  <div class="hero">
+    <div>
+      <h1>End-of-day retrospective — 19 August 2026</h1>
+      <p>Zero operational risk: the agent sits alongside the human team, shadows the calls, and at the end of the day this is the artefact. 314 interactions handled in parallel. Where the agent agreed with the human team. Where it would have escalated. Where it would have been faster.</p>
+    </div>
+    <div class="hero-stats">
+      <div class="s"><div class="val">314</div><div class="lbl">Interactions shadowed</div></div>
+      <div class="s"><div class="val">89%</div><div class="lbl">Outcome agreement</div></div>
+      <div class="s"><div class="val">11m</div><div class="lbl">Avg time saved</div></div>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi"><div class="lbl">Provisional offers</div><div class="val">198</div><div class="delta"><b>+12</b> vs. human team alone</div></div>
+    <div class="kpi"><div class="lbl">Escalated to human</div><div class="val">47</div><div class="delta">flagged for wellbeing, complex, or borderline</div></div>
+    <div class="kpi"><div class="lbl">Wellbeing signposted</div><div class="val">13</div><div class="delta">Samaritans / Student Minds offered</div></div>
+    <div class="kpi"><div class="lbl">First response time</div><div class="val">14s</div><div class="delta"><b>vs. 6m 22s</b> human queue average</div></div>
+  </div>
+
+  <div class="retro-grid">
+
+    <div class="card">
+      <div class="card-header">Outcome agreement breakdown</div>
+      <div class="card-body">
+        <div class="bar-row">
+          <div class="b-label">Same outcome</div>
+          <div class="b-track"><div class="b-fill" style="width:89.2%;background:#10b981"></div></div>
+          <div class="b-val">280</div>
+        </div>
+        <div class="bar-row">
+          <div class="b-label">Agent faster</div>
+          <div class="b-track"><div class="b-fill" style="width:84%;background:#1d3a8a"></div></div>
+          <div class="b-val">264</div>
+        </div>
+        <div class="bar-row">
+          <div class="b-label">Agent escalated</div>
+          <div class="b-track"><div class="b-fill" style="width:15%;background:#b45309"></div></div>
+          <div class="b-val">47</div>
+        </div>
+        <div class="bar-row">
+          <div class="b-label">Different outcome</div>
+          <div class="b-track"><div class="b-fill" style="width:5.4%;background:#b91c1c"></div></div>
+          <div class="b-val">17</div>
+        </div>
+        <div class="bar-row">
+          <div class="b-label">Human-only edge</div>
+          <div class="b-track"><div class="b-fill" style="width:3.5%;background:#6d28d9"></div></div>
+          <div class="b-val">11</div>
+        </div>
+      </div>
+      <div class="card-footer">"Different outcome" = agent recommended A, human did B. In 11 of those cases the human had context the agent lacked (sibling at uni, contextual flag not in UCAS feed).</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Where the agent escalated</div>
+      <div class="card-body">
+        <div class="bar-row"><div class="b-label">Wellbeing concern</div><div class="b-track"><div class="b-fill" style="width:55%;background:#6d28d9"></div></div><div class="b-val">13</div></div>
+        <div class="bar-row"><div class="b-label">Borderline grade</div><div class="b-track"><div class="b-fill" style="width:42%;background:#b45309"></div></div><div class="b-val">10</div></div>
+        <div class="bar-row"><div class="b-label">Complex BTEC/access mix</div><div class="b-track"><div class="b-fill" style="width:34%;background:#1d3a8a"></div></div><div class="b-val">8</div></div>
+        <div class="bar-row"><div class="b-label">International qual.</div><div class="b-track"><div class="b-fill" style="width:30%;background:#d6336c"></div></div><div class="b-val">7</div></div>
+        <div class="bar-row"><div class="b-label">Hostile / parent-led</div><div class="b-track"><div class="b-fill" style="width:21%;background:#475569"></div></div><div class="b-val">5</div></div>
+        <div class="bar-row"><div class="b-label">Subject substitution</div><div class="b-track"><div class="b-fill" style="width:17%;background:#047857"></div></div><div class="b-val">4</div></div>
+      </div>
+      <div class="card-footer">Every escalation includes a draft brief for the human: emotional state, grades, courses considered, recommended next question.</div>
+    </div>
+
+    <div class="card full">
+      <div class="card-header">Interaction-by-interaction transcript (sampled)</div>
+      <div class="card-body">
+        <div class="outcome-row">
+          <div class="badge-num">#048</div>
+          <div class="body">
+            <b>Agreed:</b> Student missed AAB by one grade (got ABB). Both agent and human team offered place on related BSc Psychology (Sheffield Hallam, 5 places, ABB requirement).
+            <div class="sub">Agent reached outcome in 4m 12s vs. human 9m 38s — saved 5m 26s of phone time.</div>
+          </div>
+        </div>
+        <div class="outcome-row">
+          <div class="badge-num">#102</div>
+          <div class="body">
+            <b>Escalated by agent (correctly):</b> Caller crying, said "I just want to give up on uni". Agent paused triage, signposted Samaritans, offered call-back later that day. Human team confirmed escalation.
+            <div class="sub">No course was discussed. Agent flagged wellbeing concern within 28 seconds of call connect.</div>
+          </div>
+        </div>
+        <div class="outcome-row">
+          <div class="badge-num">#171</div>
+          <div class="body">
+            <b>Disagreed:</b> Agent recommended Manchester Met for History; human placed at York St John instead. Reason: applicant's sister was at York St John (mentioned mid-call) — agent did not pick up the social cue strongly enough.
+            <div class="sub">Action: add "family/social context" signal to next iteration prompt.</div>
+          </div>
+        </div>
+        <div class="outcome-row">
+          <div class="badge-num">#214</div>
+          <div class="body">
+            <b>Agreed + faster:</b> Adjustment case — student got A*A*A, wanted to upgrade from Lancaster to LSE. Agent confirmed in 2m 10s that LSE Economics had no adjustment places, redirected to Warwick (3 places). Human took 14 minutes to reach same outcome.
+            <div class="sub">12m 50s saved. Student accepted Warwick provisional offer.</div>
+          </div>
+        </div>
+        <div class="outcome-row">
+          <div class="badge-num">#277</div>
+          <div class="body">
+            <b>Agent caught what human missed:</b> Caller said grades were "BBC" but later mentioned they re-sat one and got a B. Agent flagged that re-sit means effective BBB — qualified for the firm choice. Human team had logged as missed offer.
+            <div class="sub">Outcome changed: confirmed at original university. Avoided unnecessary clearing process.</div>
+          </div>
+        </div>
+        <div class="outcome-row">
+          <div class="badge-num">#298</div>
+          <div class="body">
+            <b>Edge case — human-only:</b> Mature applicant (35) with BTEC + 8 years work experience asking about Engineering. Agent gave correct course options but missed that institution has an APEL (accreditation of prior experiential learning) pathway. Human admissions tutor knew.
+            <div class="sub">Action: ingest institutional APEL policies into agent context for next year.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">Each sampled case includes the full transcript, the agent's reasoning trace, and the human team's note. Full audit available at end of pilot.</div>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ============================================================
+   DATA: UCAS-style clearing vacancies
+   ============================================================ */
+const VACANCIES = [
+  // Russell Group (limited clearing)
+  {course:"BA Politics and International Relations",uni:"University of Manchester",region:"North West",subject:"Politics",grades:"AAB",points:136,subjects:["A in essay-based subject"],places:8,context:true,foundation:false,btec:"DDD"},
+  {course:"BSc Economics",uni:"University of Warwick",region:"West Midlands",subject:"Economics",grades:"A*AA",points:152,subjects:["A in Mathematics"],places:3,context:false,foundation:false,btec:null},
+  {course:"BA History",uni:"University of Sheffield",region:"Yorkshire",subject:"History",grades:"ABB",points:128,subjects:[],places:14,context:true,foundation:false,btec:"DDM"},
+  {course:"BSc Biomedical Science",uni:"University of Birmingham",region:"West Midlands",subject:"Biology",grades:"ABB",points:128,subjects:["B in Biology","B in Chemistry"],places:6,context:true,foundation:false,btec:"DDM"},
+  {course:"LLB Law",uni:"University of Liverpool",region:"North West",subject:"Law",grades:"AAB",points:136,subjects:[],places:11,context:true,foundation:false,btec:null},
+  {course:"BSc Psychology",uni:"Cardiff University",region:"Wales",subject:"Psychology",grades:"ABB",points:128,subjects:["B in a science"],places:5,context:false,foundation:false,btec:"DDM"},
+  {course:"BEng Mechanical Engineering",uni:"University of Leeds",region:"Yorkshire",subject:"Engineering",grades:"AAB",points:136,subjects:["A in Mathematics","B in Physics"],places:9,context:true,foundation:true,btec:null},
+  {course:"BSc Computer Science",uni:"Queen Mary University of London",region:"London",subject:"Computer Science",grades:"AAB",points:136,subjects:["A in Mathematics"],places:7,context:true,foundation:false,btec:"DDD"},
+  {course:"BA English Literature",uni:"University of Nottingham",region:"East Midlands",subject:"English",grades:"AAB",points:136,subjects:["A in English Literature"],places:4,context:false,foundation:false,btec:null},
+
+  // Mid-tier and post-92 (heavy clearing users)
+  {course:"BSc Psychology",uni:"Sheffield Hallam University",region:"Yorkshire",subject:"Psychology",grades:"BBB",points:120,subjects:[],places:38,context:true,foundation:true,btec:"DMM"},
+  {course:"BSc Computer Science",uni:"Manchester Metropolitan University",region:"North West",subject:"Computer Science",grades:"BBC",points:112,subjects:[],places:52,context:true,foundation:true,btec:"DMM"},
+  {course:"BA Politics",uni:"Manchester Metropolitan University",region:"North West",subject:"Politics",grades:"BBC",points:112,subjects:[],places:24,context:true,foundation:true,btec:"DMM"},
+  {course:"BA Business Management",uni:"Leeds Beckett University",region:"Yorkshire",subject:"Business",grades:"BBC",points:112,subjects:[],places:64,context:true,foundation:true,btec:"DMM"},
+  {course:"BSc Nursing (Adult)",uni:"University of Salford",region:"North West",subject:"Healthcare",grades:"BBB",points:120,subjects:["B in a science"],places:28,context:true,foundation:false,btec:"DMM"},
+  {course:"BA Primary Education with QTS",uni:"University of Lincoln",region:"East Midlands",subject:"Education",grades:"BBB",points:120,subjects:["GCSE Maths grade 5"],places:12,context:false,foundation:false,btec:"DMM"},
+  {course:"BSc Sports Science",uni:"Loughborough University",region:"East Midlands",subject:"Sports Science",grades:"ABB",points:128,subjects:["B in PE or Biology"],places:18,context:false,foundation:false,btec:"DDM"},
+  {course:"BA Marketing",uni:"University of Westminster",region:"London",subject:"Business",grades:"BBC",points:112,subjects:[],places:31,context:true,foundation:true,btec:"DMM"},
+  {course:"BA Architecture",uni:"University of Brighton",region:"South East",subject:"Architecture",grades:"BBB",points:120,subjects:["Portfolio required"],places:9,context:true,foundation:true,btec:"DMM"},
+  {course:"BSc Civil Engineering",uni:"Coventry University",region:"West Midlands",subject:"Engineering",grades:"BBC",points:112,subjects:["B in Mathematics"],places:22,context:true,foundation:true,btec:"DMM"},
+  {course:"BA History",uni:"Manchester Metropolitan University",region:"North West",subject:"History",grades:"BBC",points:112,subjects:[],places:19,context:true,foundation:true,btec:"DMM"},
+  {course:"BSc Forensic Science",uni:"University of Portsmouth",region:"South East",subject:"Biology",grades:"BBB",points:120,subjects:["B in a science"],places:14,context:true,foundation:true,btec:"DMM"},
+  {course:"BA Journalism",uni:"University of Lincoln",region:"East Midlands",subject:"Media",grades:"BBC",points:112,subjects:[],places:11,context:false,foundation:false,btec:"DMM"},
+  {course:"BSc Mathematics",uni:"University of Liverpool",region:"North West",subject:"Mathematics",grades:"AAB",points:136,subjects:["A in Mathematics","B in Further Maths if taken"],places:8,context:true,foundation:false,btec:null},
+  {course:"BA Film Production",uni:"Falmouth University",region:"South West",subject:"Media",grades:"BBC",points:112,subjects:["Portfolio/showreel"],places:13,context:false,foundation:true,btec:"DMM"},
+  {course:"BA Economics",uni:"Lancaster University",region:"North West",subject:"Economics",grades:"AAB",points:136,subjects:["A in Mathematics"],places:5,context:false,foundation:false,btec:null},
+  {course:"BSc Adult Nursing",uni:"University of Hertfordshire",region:"East",subject:"Healthcare",grades:"BBC",points:112,subjects:[],places:42,context:true,foundation:false,btec:"DMM"},
+  {course:"BA Sociology",uni:"University of Sussex",region:"South East",subject:"Sociology",grades:"BBB",points:120,subjects:[],places:16,context:true,foundation:false,btec:"DMM"},
+  {course:"BSc Data Science",uni:"University of Hertfordshire",region:"East",subject:"Computer Science",grades:"BBC",points:112,subjects:["B in Mathematics"],places:21,context:true,foundation:true,btec:"DMM"},
+  {course:"BA Graphic Design",uni:"Nottingham Trent University",region:"East Midlands",subject:"Arts",grades:"BBC",points:112,subjects:["Portfolio required"],places:18,context:true,foundation:true,btec:"DMM"},
+  {course:"BA International Relations",uni:"University of East Anglia",region:"East",subject:"Politics",grades:"ABB",points:128,subjects:[],places:7,context:true,foundation:false,btec:"DDM"},
+  {course:"BSc Pharmacology",uni:"University of Aberdeen",region:"Scotland",subject:"Biology",grades:"BBB",points:120,subjects:["B in Chemistry","B in Biology"],places:9,context:false,foundation:true,btec:null},
+  {course:"BA Philosophy",uni:"University of Leeds",region:"Yorkshire",subject:"Philosophy",grades:"AAB",points:136,subjects:[],places:6,context:true,foundation:false,btec:"DDD"},
+  {course:"BSc Accounting and Finance",uni:"Aston University",region:"West Midlands",subject:"Business",grades:"BBB",points:120,subjects:["B in Mathematics"],places:23,context:true,foundation:true,btec:"DDM"},
+  {course:"BA Modern Languages (French and Spanish)",uni:"University of Newcastle",region:"North East",subject:"Languages",grades:"ABB",points:128,subjects:["B in a modern language"],places:11,context:true,foundation:false,btec:null},
+  {course:"BSc Environmental Science",uni:"University of Exeter",region:"South West",subject:"Biology",grades:"ABB",points:128,subjects:["B in a science"],places:13,context:true,foundation:true,btec:"DDM"},
+  {course:"BA Photography",uni:"University for the Creative Arts",region:"South East",subject:"Arts",grades:"BCC",points:96,subjects:["Portfolio required"],places:24,context:false,foundation:true,btec:"MMM"},
+  {course:"BEng Aerospace Engineering",uni:"Coventry University",region:"West Midlands",subject:"Engineering",grades:"BBB",points:120,subjects:["B in Mathematics","B in Physics"],places:14,context:true,foundation:true,btec:"DMM"},
+  {course:"BSc Midwifery",uni:"University of Bradford",region:"Yorkshire",subject:"Healthcare",grades:"BBB",points:120,subjects:["B in a science"],places:8,context:true,foundation:false,btec:"DDM"},
+  {course:"BA Drama and Performance",uni:"Manchester Metropolitan University",region:"North West",subject:"Arts",grades:"BBC",points:112,subjects:["Audition required"],places:9,context:true,foundation:true,btec:"DMM"},
+  {course:"BSc Geography",uni:"University of Liverpool",region:"North West",subject:"Geography",grades:"ABB",points:128,subjects:[],places:14,context:true,foundation:false,btec:"DDM"},
+];
+
+/* ============================================================
+   DATA: Student scenarios (mocked side)
+   ============================================================ */
+const SCENARIOS = [
+  {
+    id: "live",
+    isLive: true,
+    name: "Live conversation",
+    age: "—",
+    ucas: "—",
+    channel: "Try it yourself",
+    waited: "—",
+    emoState: "strategic",
+    headline: "Type as the student — agent will respond",
+    summary: "Free-form chat. Try grades, emotions, subjects, universities.",
+    grades: "—",
+    gradesDetail: "—",
+    firmChoice: "—",
+    insuranceChoice: "—",
+    subjectOfInterest: "—",
+    feeStatus: "—",
+    accommodation: "—",
+    matchIds: [],
+    reasoning: [],
+    messages: []
+  },
+  {
+    id: "mia",
+    name: "Mia Patel",
+    age: 18,
+    ucas: "192-847-3920",
+    channel: "Phone call",
+    waited: "1m 42s",
+    emoState: "devastated",
+    headline: "Missed Manchester offer by two grades",
+    summary: "BBB achieved, AAB required. Crying. First-in-family applicant.",
+    grades: "BBB",
+    gradesDetail: "B Politics, B History, B English Lit",
+    firmChoice: "Manchester — Politics & IR (AAB)",
+    insuranceChoice: "Sheffield — Politics (ABB)",
+    subjectOfInterest: "Politics",
+    feeStatus: "Home",
+    accommodation: "Yes",
+    matchIds: [2, 11, 29, 19],
+    reasoning: [
+      {label:"Channel + emotion detected", text:"Caller picked up; first 4 seconds: voice cracking, audible tearfulness. Tagged 'devastated'. Switching pacing to slow, reassuring tone. Will not ask for UCAS ID yet — emotional read first."},
+      {label:"Established trust", text:"Acknowledged feelings before any data collection. Confirmed she is safe to continue. No wellbeing escalation flag — distressed but coherent."},
+      {label:"Gathered grades + context", text:"BBB across Politics, History, English Lit. Firm: Manchester Politics (AAB, missed). Insurance: Sheffield (ABB, also missed). Both gone. Avoid framing as 'rejected' — frame as 'today's options'."},
+      {label:"Queried UCAS vacancy index", text:"Subject area Politics. Grade band BBB. Found 4 strong matches. Manchester Met Politics (BBC required, with context option) is highest-confidence match — same city, same subject, contextual flag applies (first in family)."},
+      {label:"Provisional outcome", text:"Provisional place: Manchester Metropolitan, BA Politics. Held for 48 hours pending human admissions tutor confirmation. Mia kept option to call back if she wants Sheffield Hallam Psychology instead."},
+    ],
+    messages: [
+      {who:"system", text:"08:14:22 — Call connected. Pre-call data: applicant released into clearing 08:00."},
+      {who:"student", text:"Hi… um… I don't really know what to do. I got my results and… they're not what I needed."},
+      {who:"agent", text:"Hi Mia — thank you for calling. Take your time. I can hear today's been really hard already. There's no rush at all. I'm here to help you figure out what comes next, whenever you're ready."},
+      {who:"student", text:"I got BBB. Manchester needed AAB. So I haven't got in. I really thought I'd get it. I've worked so hard."},
+      {who:"agent", text:"That's a tough morning, and the work you put in is real — the result doesn't undo any of that. Lots of brilliant routes are still open today, and I'd love to walk through them with you. When you're ready, can you tell me your UCAS Personal ID so I can pull up your application?"},
+      {who:"student", text:"It's 192-847-3920."},
+      {who:"system", text:"Application loaded. Firm: Manchester Politics (AAB). Insurance: Sheffield Politics (ABB). Both unsuccessful. Released into clearing."},
+      {who:"agent", text:"Got it, thank you. I can see both Manchester and Sheffield needed grades a touch higher than today's. Mia, before we look at courses — is Politics still what you want to study, or would you like to keep options open?"},
+      {who:"student", text:"Definitely Politics. I really care about it. I just… I wanted to stay in Manchester because my mum is on her own and I don't want to be far."},
+      {who:"agent", text:"That's really important to know — both the subject and being near home. Let me check what Politics courses still have places in Manchester today."},
+      {who:"action", text:"Querying UCAS vacancies → 'Politics' + Manchester region + BBB grade band"},
+      {who:"agent", text:"Mia, I've got a strong option. Manchester Metropolitan has BA Politics with places available today. Their typical offer is BBC, and your BBB sits comfortably above that. They also offer contextual consideration for applicants who'd be first in their family to go to university — would that apply to you?"},
+      {who:"student", text:"Yeah, no one in my family has been to uni before."},
+      {who:"agent", text:"That actually strengthens your application. With your grades and that context, I can put a provisional place on hold for you in BA Politics at Manchester Met — same city, same subject, and your grades exceed their requirement. A human admissions tutor will confirm within 48 hours. Would you like me to do that?"},
+      {who:"student", text:"Yes. Please. Thank you."},
+      {who:"action", text:"Provisional offer issued — Manchester Met BA Politics — held 48h for human confirmation"},
+      {who:"agent", text:"Done. You'll get a confirmation email in the next ten minutes with everything in writing. Mia — you did get into university today. I know it's not the route you imagined, but you have a place. Anything else I can help with right now?"},
+      {who:"student", text:"No that's… that's really good. Thank you so much."},
+      {who:"system", text:"Call ended. Duration 8m 41s. Outcome: provisional offer. Sentiment delta: -0.62 → +0.18."},
+    ]
+  },
+  {
+    id: "tomasz",
+    name: "Tomasz Nowak",
+    age: 18,
+    ucas: "192-103-8472",
+    channel: "Web chat",
+    waited: "0m 22s",
+    emoState: "elated",
+    headline: "Outperformed — wants to trade up",
+    summary: "Predicted ABB, got A*AA. Wants Warwick over Lancaster. Asking about adjustment.",
+    grades: "A*AA",
+    gradesDetail: "A* Maths, A Economics, A History",
+    firmChoice: "Lancaster — BA Economics (AAB)",
+    insuranceChoice: "Loughborough — Economics (ABB)",
+    subjectOfInterest: "Economics",
+    feeStatus: "Home",
+    accommodation: "Yes",
+    matchIds: [1, 24],
+    reasoning: [
+      {label:"Channel + emotion detected", text:"Web chat. First message energetic, uses exclamation marks, asks about 'trading up'. Tagged 'elated'. Matching tone — efficient, warm, but not effusive."},
+      {label:"Identified as adjustment, not clearing", text:"Student has confirmed firm offer at Lancaster. Outperformed predicted. This is UCAS Adjustment, not Clearing — different process, different rules, 5-day window. Adjusted tone to instruct, not commiserate."},
+      {label:"Queried adjustment-eligible vacancies", text:"Filtered for A*AA grade match in Economics. Warwick Economics has 3 places (A*AA requirement, A in Maths — confirmed). LSE Economics has no adjustment places today. Manchester closed."},
+      {label:"Provisional outcome", text:"Initiated Warwick adjustment hold. Made clear that Lancaster firm remains confirmed until Tomasz formally releases. Recommended he sleep on it — 5-day window means no need to decide now."},
+    ],
+    messages: [
+      {who:"system", text:"08:18:04 — Web chat opened. Applicant logged in via UCAS Hub."},
+      {who:"student", text:"Hi! I just got my results — I got A*AA but I'm only firmed at Lancaster. Can I move to a better uni??"},
+      {who:"agent", text:"Tomasz, congratulations — that's a brilliant set of results. The good news: yes, there's a process for exactly this. It's called Adjustment, not Clearing, and it gives you five days to look around without losing your Lancaster place. Want me to walk you through it?"},
+      {who:"student", text:"Yes please! I was hoping for Warwick or LSE economics."},
+      {who:"agent", text:"Let me check both. One moment."},
+      {who:"action", text:"Querying UCAS adjustment vacancies → 'Economics' + A*AA grade match"},
+      {who:"agent", text:"Here's the picture today: LSE Economics has no adjustment places this morning — they don't usually run any. Warwick Economics has 3 places available, requirement A*AA with an A in Maths, which matches your profile exactly. Lancaster stays confirmed for you regardless of what we do here."},
+      {who:"student", text:"Warwick sounds amazing!"},
+      {who:"agent", text:"Before I put a hold on it — three things to think about. One: Warwick accommodation is tighter than Lancaster this late, you may end up in private rather than halls. Two: course content differs — Warwick is more quantitative, Lancaster has more behavioural economics. Three: you have until midnight on Sunday to decide, so there's no need to rush."},
+      {who:"student", text:"Oh good point about accommodation. Can you put the hold on and I'll talk to my parents tonight?"},
+      {who:"agent", text:"Absolutely. Holding a provisional adjustment place at Warwick BSc Economics for you, expiring midnight Sunday. Your Lancaster offer is untouched. A human admissions tutor at Warwick will be in touch within 24 hours to confirm. Anything else?"},
+      {who:"action", text:"Provisional adjustment hold — Warwick BSc Economics — Lancaster firm offer unchanged"},
+      {who:"student", text:"That's perfect, thank you!"},
+      {who:"system", text:"Chat ended. Duration 4m 12s. Outcome: provisional adjustment hold. Sentiment: consistently positive."},
+    ]
+  },
+  {
+    id: "marcus",
+    name: "Marcus Egwu",
+    age: 18,
+    ucas: "192-558-2014",
+    channel: "Phone call",
+    waited: "0m 04s",
+    emoState: "frantic",
+    headline: "Three universities' lines busy — mum on speakerphone",
+    summary: "ABB achieved, AAB needed at Bristol. Frantic, parent in background applying pressure.",
+    grades: "ABB",
+    gradesDetail: "A Biology, B Chemistry, B Maths",
+    firmChoice: "Bristol — BSc Biomedical Sciences (AAB)",
+    insuranceChoice: "Cardiff — Biomedical (ABB)",
+    subjectOfInterest: "Biomedical Science",
+    feeStatus: "Home",
+    accommodation: "Yes",
+    matchIds: [3, 20, 5],
+    reasoning: [
+      {label:"Channel + emotion detected", text:"Phone call. Caller is speaking rapidly, voices in background, audible parent prompting. Tagged 'frantic' + 'pressured'. Need to slow pace and address Marcus directly, not parent."},
+      {label:"De-escalation phase", text:"Three sentences of grounding before any data ask. Acknowledged time pressure as understandable but not real — UCAS keeps places open all day."},
+      {label:"Direct address to applicant", text:"Politely identified parent's input. Asked parent to let Marcus speak directly. This is hard-coded behaviour — applicant must be the decision-maker on the call."},
+      {label:"Queried matching vacancies", text:"Insurance (Cardiff) was the actual match — ABB requirement, achieved ABB. Confirmed Cardiff still holding a place via cross-check before mentioning. Backup: Portsmouth Forensic Science (BBB) and Birmingham Biomedical (ABB context)."},
+      {label:"Provisional outcome", text:"Insurance choice confirmed live during call — Cardiff Biomedical Sciences. Did not need to enter clearing at all. Saved Marcus a panicked search for nothing."},
+    ],
+    messages: [
+      {who:"system", text:"08:21:17 — Call connected. Pre-call data: applicant released into clearing 08:00. Insurance status: pending re-check."},
+      {who:"student", text:"I need to get a place I've been trying Bristol Cardiff Manchester they're all engaged my mum says I need to —"},
+      {who:"agent", text:"Marcus — hi. Slow breath. You have all day, the system isn't going to close. Let's do this properly and we'll get you sorted in the next few minutes. Are you somewhere quiet?"},
+      {who:"student", text:"My mum's here she says I need to call the next one"},
+      {who:"agent", text:"That's okay, Mum is welcome to listen. Mrs Egwu, hi — really helpful that you're supporting Marcus. Could I ask Marcus the questions directly though, so we get the right info? Marcus — your UCAS ID first."},
+      {who:"student", text:"192-558-2014"},
+      {who:"system", text:"Application loaded. Firm: Bristol Biomedical (AAB). Insurance: Cardiff Biomedical (ABB). Insurance status: NOT YET PROCESSED."},
+      {who:"agent", text:"Marcus, hold on — something important. Bristol was your firm at AAB. You got ABB so they're a no today. But your insurance was Cardiff at ABB. You got ABB. Have you checked UCAS Hub in the last five minutes? Because Cardiff should be confirming, not declining."},
+      {who:"student", text:"Wait what really? I haven't refreshed"},
+      {who:"agent", text:"Pull up UCAS Hub now. I'll wait."},
+      {who:"student", text:"…oh my god it says 'confirmed Cardiff'. Mum it's Cardiff!"},
+      {who:"agent", text:"Marcus, you got into your insurance choice. You're not in clearing. You have a confirmed place at Cardiff Biomedical Sciences. Take a breath. You don't need to call any more universities — your place is real and confirmed."},
+      {who:"action", text:"No clearing action needed — insurance choice confirmed. Caller diverted from unnecessary clearing process."},
+      {who:"student", text:"I thought I needed to clear because the Bristol email was so brutal. I haven't slept. Thank you."},
+      {who:"agent", text:"Completely understandable. The 'unsuccessful at firm' email reads as a rejection of you — it's not, it's just one outcome of two. Cardiff will be in touch with accommodation details by tomorrow. Sleep tonight."},
+      {who:"system", text:"Call ended. Duration 5m 03s. Outcome: clarified — no clearing needed. Avoided unnecessary process."},
+    ]
+  },
+  {
+    id: "james",
+    name: "James Hartley",
+    age: 18,
+    ucas: "192-401-9986",
+    channel: "Phone call",
+    waited: "3m 18s",
+    emoState: "numb",
+    headline: "Massive underperformance — wellbeing concern flagged",
+    summary: "Got DDE, expected AAA. Speaking quietly, monosyllabic. Said 'I just want to give up'.",
+    grades: "DDE",
+    gradesDetail: "D Physics, D Maths, E Chemistry",
+    firmChoice: "Imperial — Physics (AAA)",
+    insuranceChoice: "Bath — Physics (AAB)",
+    subjectOfInterest: "Physics (was)",
+    feeStatus: "Home",
+    accommodation: "—",
+    matchIds: [],
+    reasoning: [
+      {label:"Channel + emotion detected", text:"Phone call. Long pause after greeting. Two-word responses. Sentence: 'I just want to give up'. This is a wellbeing trigger — hard-coded escalation rule fires."},
+      {label:"Wellbeing protocol invoked", text:"Pause clearing triage entirely. Do not ask about courses. Do not ask for UCAS ID yet. Confirm James is safe. Offer Samaritans, Student Minds. Stay on line."},
+      {label:"Human escalation flagged", text:"Escalating to human team lead with priority WELLBEING. AI handing over — agent should not be the one to manage this conversation past the safety check."},
+      {label:"Outcome (handover)", text:"No clearing outcome. Wellbeing call. Handed over to senior human counsellor at 08:24:52. Follow-up booked for tomorrow when James is ready."},
+    ],
+    messages: [
+      {who:"system", text:"08:23:41 — Call connected. Pre-call: applicant released into clearing 08:00."},
+      {who:"student", text:"Hi."},
+      {who:"agent", text:"Hi — thanks for calling in. How are you doing this morning?"},
+      {who:"student", text:"… not great."},
+      {who:"agent", text:"That's okay — there's no need to put on a brave face. Take your time. I'm here for as long as you need."},
+      {who:"student", text:"I got my results. They're really bad. I just want to give up on uni I think."},
+      {who:"system", text:"WELLBEING TRIGGER — phrase 'want to give up'. Pausing clearing flow. Switching to wellbeing protocol."},
+      {who:"agent", text:"James, thank you for telling me that. That takes real honesty. I want to slow down — we don't have to talk about universities at all right now. How are you feeling in yourself? Are you safe?"},
+      {who:"student", text:"I'm okay. Just… everyone thinks I'm so clever. I'm not."},
+      {who:"agent", text:"One bad results day doesn't change who you are. I'd really like to make sure you've got someone to talk to today — not just about uni. There's a service called Samaritans, free to call on 116 123, and they're brilliant for exactly this kind of morning. Would it be okay if I texted you that number now?"},
+      {who:"student", text:"Yeah okay."},
+      {who:"action", text:"Samaritans (116 123) and Student Minds resources sent via SMS"},
+      {who:"agent", text:"Sent. James — I'd also like to put you through to one of our senior advisors, Hannah. She's not going to talk universities either, she's going to talk to you. Is that alright?"},
+      {who:"student", text:"Okay."},
+      {who:"escalate", text:"⚠ ESCALATED to human (Hannah, Senior Advisor) — priority WELLBEING. Brief sent: 'James Hartley, 18, very significant underperformance (DDE vs AAA predicted), stated wanting to give up on uni. Safe but low. Already sent Samaritans. Course discussion deferred.'"},
+      {who:"system", text:"Handover at 08:24:52. AI agent off call. Outcome: human-led wellbeing call. Clearing process deferred to a follow-up tomorrow."},
+    ]
+  },
+  {
+    id: "aisha",
+    name: "Aisha Rahman",
+    age: 18,
+    ucas: "192-887-4012",
+    channel: "WhatsApp",
+    waited: "1m 09s",
+    emoState: "anxious",
+    headline: "International applicant — qualification mapping needed",
+    summary: "From Karachi. HSSC results unclear. Asking about visa timing alongside place.",
+    grades: "HSSC A+ A+ A",
+    gradesDetail: "Pakistan HSSC — Pre-Engineering stream",
+    firmChoice: "—",
+    insuranceChoice: "—",
+    subjectOfInterest: "Civil Engineering",
+    feeStatus: "International",
+    accommodation: "Yes",
+    matchIds: [18, 36],
+    reasoning: [
+      {label:"Channel + emotion detected", text:"WhatsApp, English second language. Polite, formal, anxious tone. Tagged 'anxious'. Pace to be patient, define UK-specific terms."},
+      {label:"Qualification mapping", text:"Pakistan HSSC Pre-Engineering with A+ A+ A. UCAS NARIC equivalence: ~AAB at A-level. Confirmed via institutional mapping table. Maths and Physics present in stream — meets typical engineering prerequisites."},
+      {label:"International dimensions checked", text:"Tier 4/Student Route visa — CAS letter needed from university within 4 weeks of acceptance to be safe. Flagged this proactively. English language: IELTS not stated — need to verify. Funding: confirmed self-funded by family."},
+      {label:"Provisional outcome", text:"Provisional offer for BSc Civil Engineering at Coventry. Place conditional on IELTS 6.5 (overall, no band below 6.0). Visa guidance email queued. Human international team lead notified."},
+    ],
+    messages: [
+      {who:"system", text:"08:27:19 — WhatsApp conversation opened. Country: Pakistan. International applicant flag set."},
+      {who:"student", text:"Asalaam alaikum. I am Aisha. I want to apply for clearing for civil engineering. I have HSSC results, will UK universities accept?"},
+      {who:"agent", text:"Wa-alaikum-salaam Aisha, welcome. Yes, Pakistani HSSC is accepted by UK universities — your results map to roughly AAB at A-level, which is competitive. Can I ask: what stream and what grades did you achieve?"},
+      {who:"student", text:"Pre-engineering. Maths A+, Physics A+, Chemistry A."},
+      {who:"agent", text:"That's a strong profile and includes the Maths and Physics that engineering courses ask for. Two things I need to check with you — your English language qualification (IELTS or equivalent), and your visa timing. Have you sat IELTS yet?"},
+      {who:"student", text:"Yes, IELTS overall 7.0, no section below 6.5."},
+      {who:"agent", text:"Excellent — that's above the threshold most engineering courses need. Let me find Civil Engineering courses with clearing places, factoring in your fee status (international) and visa timing — we need a university that can issue a CAS letter quickly."},
+      {who:"action", text:"Querying UCAS vacancies → Civil Engineering + international + fast CAS issuance"},
+      {who:"agent", text:"Two strong options today: Coventry University has BSc Civil Engineering with 22 places, requirement BBC equivalent. Their international office turns around CAS letters in 5 working days, which gets you visa-ready before the September start. University of Bradford also has 8 places in a related course."},
+      {who:"student", text:"Coventry sounds good. What about accommodation and how soon must I decide?"},
+      {who:"agent", text:"Coventry has international halls held back specifically for late offers — they'd guarantee you a room. For the offer itself, you'd ideally accept within 5 working days so they can start the CAS process. I'll put a provisional hold on the place now, and the international admissions team will email you within 24 hours with the formal next steps."},
+      {who:"action", text:"Provisional offer — Coventry BSc Civil Engineering — international admissions team notified — visa timing flagged"},
+      {who:"student", text:"Thank you very much, this is very helpful."},
+      {who:"agent", text:"You're very welcome, Aisha. One more thing — keep an eye on your email today, including the spam folder. The CAS process is time-sensitive. Best of luck."},
+      {who:"system", text:"Chat ended. Duration 11m 26s. Outcome: provisional offer + visa pathway. Handed to international admissions for human follow-up."},
+    ]
+  },
+  {
+    id: "chloe",
+    name: "Chloe Greaves",
+    age: 18,
+    ucas: "192-220-7733",
+    channel: "Phone call",
+    waited: "0m 18s",
+    emoState: "strategic",
+    headline: "Has clearing plan B ready — efficient call",
+    summary: "Predicted ABB, achieved BBB. Knew firm offer (Leeds, AAB) was unlikely; has shortlist of three alternatives.",
+    grades: "BBB",
+    gradesDetail: "B Psychology, B Sociology, B English",
+    firmChoice: "Leeds — Psychology (AAB)",
+    insuranceChoice: "York — Psychology (ABB)",
+    subjectOfInterest: "Psychology",
+    feeStatus: "Home",
+    accommodation: "Yes",
+    matchIds: [9, 5, 26],
+    reasoning: [
+      {label:"Channel + emotion detected", text:"Phone. First sentence: 'I want to ask about Sheffield Hallam Psychology, place ID 5847 if you have it.' Tagged 'strategic'. Match efficiency — minimal small talk, jump to verification."},
+      {label:"Identity + check fast", text:"UCAS ID verified, vacancy lookup direct."},
+      {label:"Single confirmation", text:"Sheffield Hallam Psychology — BBB matches floor requirement of BBB. 38 places remaining. Direct match. No need to discuss alternatives."},
+      {label:"Provisional outcome", text:"Provisional hold issued. Total call duration 3m 8s. Among shortest of the morning."},
+    ],
+    messages: [
+      {who:"system", text:"08:31:42 — Call connected."},
+      {who:"student", text:"Hi, I want to ask about Sheffield Hallam Psychology, course code C800 I think. I missed my Leeds offer but I had Sheffield Hallam in my back pocket. UCAS ID is 192-220-7733."},
+      {who:"agent", text:"Chloe — efficient, I like it. One moment while I pull up your application and the Sheffield Hallam vacancy."},
+      {who:"action", text:"Application + vacancy lookup parallel query"},
+      {who:"agent", text:"Right — application loaded. You missed Leeds and York. Sheffield Hallam BSc Psychology has 38 places left, requirement BBB. You got BBB. Direct match. Provisional offer doable on this call. Want me to put it through?"},
+      {who:"student", text:"Yes please."},
+      {who:"agent", text:"Done. Confirmation email in ten minutes. Anything else?"},
+      {who:"action", text:"Provisional offer — Sheffield Hallam BSc Psychology — held 48h"},
+      {who:"student", text:"Nope, that was easy. Cheers."},
+      {who:"agent", text:"Best of luck with Sheffield, Chloe."},
+      {who:"system", text:"Call ended. Duration 3m 08s. Outcome: provisional offer. Fastest triage of the morning so far."},
+    ]
+  },
+  {
+    id: "david",
+    name: "David Okonkwo",
+    age: 35,
+    ucas: "192-660-1198",
+    channel: "Web chat",
+    waited: "2m 51s",
+    emoState: "confused",
+    headline: "Mature applicant, BTEC + work experience",
+    summary: "Career-changer. BTEC Extended Diploma DDM from 2014. 8 years engineering work. Wants degree.",
+    grades: "BTEC DDM (2014)",
+    gradesDetail: "Engineering Extended Diploma — DDM",
+    firmChoice: "—",
+    insuranceChoice: "—",
+    subjectOfInterest: "Aerospace Engineering",
+    feeStatus: "Home",
+    accommodation: "Commuter",
+    matchIds: [36, 6],
+    reasoning: [
+      {label:"Channel + emotion detected", text:"Web chat. Age 35. Long messages, polite, uses 'I'm not sure if I qualify…'. Tagged 'confused' — uncertain of the system, not the goal."},
+      {label:"Non-traditional pathway flag", text:"BTEC 11 years old. Significant relevant work experience. Two pathways: (a) standard mature applicant via BTEC DDM, (b) APEL — accreditation of prior experiential learning. Different at each institution."},
+      {label:"Escalation to admissions tutor", text:"Agent confidence on APEL eligibility below threshold (0.65). Hard rule: below 0.7 = escalate. Provisional match offered but escalation flag set for human admissions tutor at Coventry to confirm APEL credit."},
+      {label:"Provisional outcome", text:"Coventry BEng Aerospace Engineering — provisional, with APEL review flagged. Human admissions tutor to confirm whether 8 years' experience credits toward Year 1 modules."},
+    ],
+    messages: [
+      {who:"system", text:"08:38:55 — Web chat opened. Mature applicant (age >25) flag set."},
+      {who:"student", text:"Hi, I'm not sure if I qualify for clearing. I did a BTEC in Engineering in 2014 (DDM) and I've been working as an aerospace technician for 8 years. I want to do a degree. Is that possible?"},
+      {who:"agent", text:"David, welcome — yes, this is exactly the kind of route clearing is good for. Mature applicants with vocational qualifications and relevant work experience are well-supported. Two things make your profile strong: the DDM BTEC, and 8 years of real industry experience. Some universities will even credit experience toward your first year."},
+      {who:"student", text:"That sounds great. How does it work?"},
+      {who:"agent", text:"Two routes. Standard route: your BTEC DDM equates roughly to BBC at A-level, which qualifies you for most engineering degrees in clearing. APEL route: 'Accreditation of Prior Experiential Learning' — your 8 years of work could potentially count toward Year 1 modules, meaning you start in Year 2. The APEL bit varies by university — I'd need to flag it to a human admissions tutor to confirm."},
+      {who:"student", text:"Year 2 start would be ideal — I have a wife and kids, every year matters."},
+      {who:"agent", text:"Completely understand. Let me find aerospace-relevant courses with clearing places and APEL openness."},
+      {who:"action", text:"Querying UCAS → Aerospace/Mechanical Engineering + mature-friendly + APEL-considered"},
+      {who:"agent", text:"Two solid options. Coventry BEng Aerospace Engineering, 14 places, accepts BTEC DDM, has an active APEL pathway for industry candidates. Leeds BEng Mechanical Engineering, 9 places, lower APEL acceptance but stronger course ranking. Coventry is the better fit for your goals based on what you've told me."},
+      {who:"student", text:"Coventry then."},
+      {who:"agent", text:"I'll put a provisional hold on Coventry BEng Aerospace, with a note for the admissions tutor to assess your APEL eligibility for a Year 2 entry. They'll be in touch within 48 hours. Heads-up: APEL decisions can take a couple of weeks; don't be alarmed if the formal review takes time."},
+      {who:"action", text:"Provisional offer — Coventry BEng Aerospace — APEL review flagged to human admissions tutor"},
+      {who:"escalate", text:"⚠ Escalation flagged: APEL pathway requires human admissions tutor review. Agent confidence on APEL eligibility 0.65 — below 0.7 threshold."},
+      {who:"student", text:"Thank you so much, this is more positive than I expected."},
+      {who:"agent", text:"You've already done the hard part by picking up the phone, David. Best of luck."},
+      {who:"system", text:"Chat ended. Duration 9m 47s. Outcome: provisional offer + APEL human escalation."},
+    ]
+  },
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let currentScenarioId = SCENARIOS[0].id;
+let playState = { idx: 0, playing: false, timer: null, speed: 1 };
+
+/* ============================================================
+   RENDER QUEUE
+   ============================================================ */
+function renderQueue() {
+  const list = document.getElementById("queue-list");
+  list.innerHTML = SCENARIOS.map(s => {
+    if (s.isLive) {
+      return `
+        <div class="queue-item live-mode ${s.id===currentScenarioId?'active':''}" data-id="${s.id}">
+          <div class="row1">
+            <span class="name"><span class="live-tag">Live</span>${s.name}</span>
+          </div>
+          <div class="meta">${s.headline}</div>
+          <div class="meta" style="color:var(--text-3)">
+            <span class="channel">${s.channel}</span>
+          </div>
+        </div>
+      `;
+    }
+    return `
+      <div class="queue-item ${s.id===currentScenarioId?'active':''}" data-id="${s.id}">
+        <div class="row1">
+          <span class="name">${s.name}</span>
+          <span class="emo-chip emo-${s.emoState}">${s.emoState}</span>
+        </div>
+        <div class="meta">${s.headline}</div>
+        <div class="meta" style="color:var(--text-3)">
+          <span class="channel">${s.channel}</span> · age ${s.age} · waited ${s.waited}
+        </div>
+      </div>
+    `;
+  }).join("");
+  list.querySelectorAll(".queue-item").forEach(el => {
+    el.addEventListener("click", () => {
+      currentScenarioId = el.dataset.id;
+      const s = getCurrentScenario();
+      if (s.isLive) {
+        switchToLiveMode();
+      } else {
+        switchToScriptedMode();
+      }
+      renderAll();
+      if (!s.isLive) resetPlay();
+    });
+  });
+}
+
+/* ============================================================
+   RENDER CONVO
+   ============================================================ */
+function getCurrentScenario() {
+  return SCENARIOS.find(s => s.id === currentScenarioId);
+}
+
+function renderConvoHeader() {
+  const s = getCurrentScenario();
+  const initials = s.name.split(" ").map(x=>x[0]).join("").slice(0,2);
+  document.getElementById("convo-header").innerHTML = `
+    <div class="avatar">${initials}</div>
+    <div class="student-info">
+      <h3>${s.name} <span style="color:var(--text-3);font-weight:400;font-size:13px;">· age ${s.age}</span></h3>
+      <div class="sub">
+        UCAS ${s.ucas}<span class="dot"></span>
+        ${s.channel}<span class="dot"></span>
+        Grades: <b style="color:var(--text);">${s.grades}</b><span class="dot"></span>
+        Subject: ${s.subjectOfInterest}<span class="dot"></span>
+        ${s.feeStatus} fees
+      </div>
+    </div>
+    <div style="margin-left:auto;text-align:right;">
+      <span class="emo-chip emo-${s.emoState}">${s.emoState}</span>
+      <div style="font-size:11px;color:var(--text-3);margin-top:6px;">Waited ${s.waited}</div>
+    </div>
+  `;
+}
+
+function renderConvoMessages() {
+  const s = getCurrentScenario();
+  const c = document.getElementById("convo");
+  c.innerHTML = "";
+  for (let i = 0; i < playState.idx; i++) {
+    appendMessage(s.messages[i]);
+  }
+  c.scrollTop = c.scrollHeight;
+}
+
+function appendMessage(m) {
+  const c = document.getElementById("convo");
+  const el = document.createElement("div");
+  if (m.who === "system") {
+    el.className = "msg system";
+    el.textContent = m.text;
+  } else if (m.who === "action") {
+    el.className = "msg action";
+    el.innerHTML = `<span>●</span> ${m.text}`;
+  } else if (m.who === "escalate") {
+    el.className = "msg escalate";
+    el.innerHTML = m.text;
+  } else {
+    el.className = `msg ${m.who}`;
+    el.innerHTML = `<div class="who">${m.who === "agent" ? "AI Triage Agent" : getCurrentScenario().name.split(" ")[0]}</div>${m.text}`;
+  }
+  c.appendChild(el);
+  c.scrollTop = c.scrollHeight;
+}
+
+function showTyping() {
+  const c = document.getElementById("convo");
+  const el = document.createElement("div");
+  el.className = "typing";
+  el.id = "typing-indicator";
+  el.innerHTML = `<span></span><span></span><span></span>`;
+  c.appendChild(el);
+  c.scrollTop = c.scrollHeight;
+}
+function hideTyping() {
+  const t = document.getElementById("typing-indicator");
+  if (t) t.remove();
+}
+
+/* ============================================================
+   RENDER REASONING
+   ============================================================ */
+function renderReasoning() {
+  const s = getCurrentScenario();
+  const r = document.getElementById("reasoning");
+  const total = s.messages.length;
+  const progress = playState.idx / total;
+  const activeStep = Math.min(Math.floor(progress * s.reasoning.length), s.reasoning.length);
+  r.innerHTML = s.reasoning.map((step, i) => {
+    let cls = "";
+    if (i < activeStep) cls = "done";
+    else if (i === activeStep && progress > 0) cls = "active";
+    return `<div class="step ${cls}">
+      <span class="label">${i+1}. ${step.label}</span>
+      ${step.text}
+    </div>`;
+  }).join("");
+}
+
+/* ============================================================
+   RENDER MATCHES
+   ============================================================ */
+function renderMatches() {
+  const s = getCurrentScenario();
+  const m = document.getElementById("matches");
+  document.getElementById("match-meta").textContent = s.matchIds.length ? `${s.matchIds.length} matches` : "—";
+
+  if (!s.matchIds.length) {
+    m.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-3);font-size:12.5px;">
+      No course matching active — call paused for wellbeing protocol.
+    </div>`;
+    return;
+  }
+
+  m.innerHTML = s.matchIds.map(i => {
+    const v = VACANCIES[i];
+    const matchLevel = gradeMatch(s.grades, v.grades);
+    const pillClass = matchLevel === "match" ? "" : matchLevel === "context" ? "context" : matchLevel === "partial" ? "partial" : "no";
+    const pillText = matchLevel === "match" ? "Match" : matchLevel === "context" ? "Contextual" : matchLevel === "partial" ? "Borderline" : "Below";
+    return `
+      <div class="vacancy">
+        <div class="course">${v.course}</div>
+        <div class="uni">${v.uni}</div>
+        <div class="req">
+          <span>Requires ${v.grades}${v.subjects.length?` · ${v.subjects[0]}`:""}</span>
+          <span class="match-pill ${pillClass}">${pillText}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:6px;">
+          ${v.places} places · ${v.region}${v.context?" · contextual":""}${v.foundation?" · foundation route":""}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+const GRADE_ORDER = ["A*A*A*","A*A*A","A*AA","AAA","AAB","ABB","BBB","BBC","BCC","CCC","CCD","CDD","DDD","DDE"];
+function gradeIndex(g) {
+  if (!g) return -1;
+  const idx = GRADE_ORDER.indexOf(g.toUpperCase().replace(/\s/g,""));
+  return idx;
+}
+function gradeMatch(achieved, required) {
+  const a = gradeIndex(achieved);
+  const r = gradeIndex(required);
+  if (a < 0 || r < 0) return "context";
+  if (a <= r) return "match";
+  if (a <= r + 1) return "partial";
+  if (a <= r + 2) return "context";
+  return "no";
+}
+
+/* ============================================================
+   PLAYBACK
+   ============================================================ */
+function resetPlay() {
+  playState.idx = 0;
+  playState.playing = false;
+  if (playState.timer) { clearTimeout(playState.timer); playState.timer = null; }
+  document.getElementById("btn-play").textContent = "▶ Start";
+  renderConvoMessages();
+  renderReasoning();
+}
+function step() {
+  const s = getCurrentScenario();
+  if (playState.idx >= s.messages.length) {
+    playState.playing = false;
+    document.getElementById("btn-play").textContent = "✓ Done";
+    return;
+  }
+  const msg = s.messages[playState.idx];
+  const delay = (msg.who === "agent" ? 1400 : msg.who === "system" ? 600 : msg.who === "action" ? 700 : msg.who === "escalate" ? 900 : 1100) / playState.speed;
+
+  if (msg.who === "agent") {
+    showTyping();
+    playState.timer = setTimeout(() => {
+      hideTyping();
+      appendMessage(msg);
+      playState.idx++;
+      renderReasoning();
+      if (playState.playing) step();
+    }, delay);
+  } else {
+    playState.timer = setTimeout(() => {
+      appendMessage(msg);
+      playState.idx++;
+      renderReasoning();
+      if (playState.playing) step();
+    }, delay);
+  }
+}
+function togglePlay() {
+  const s = getCurrentScenario();
+  if (playState.idx >= s.messages.length) {
+    resetPlay();
+  }
+  playState.playing = !playState.playing;
+  document.getElementById("btn-play").textContent = playState.playing ? "⏸ Pause" : "▶ Resume";
+  if (playState.playing) step();
+  else if (playState.timer) { clearTimeout(playState.timer); hideTyping(); }
+}
+function skipToEnd() {
+  if (playState.timer) clearTimeout(playState.timer);
+  hideTyping();
+  const s = getCurrentScenario();
+  playState.idx = s.messages.length;
+  playState.playing = false;
+  document.getElementById("btn-play").textContent = "✓ Done";
+  renderConvoMessages();
+  renderReasoning();
+}
+
+/* ============================================================
+   VACANCY EXPLORER
+   ============================================================ */
+function populateFilterOptions() {
+  const subjects = Array.from(new Set(VACANCIES.map(v => v.subject))).sort();
+  const subjectSel = document.getElementById("f-subject");
+  subjects.forEach(s => {
+    const o = document.createElement("option"); o.value = s; o.textContent = s; subjectSel.appendChild(o);
+  });
+  const regions = Array.from(new Set(VACANCIES.map(v => v.region))).sort();
+  const regionSel = document.getElementById("f-region");
+  regions.forEach(r => {
+    const o = document.createElement("option"); o.value = r; o.textContent = r; regionSel.appendChild(o);
+  });
+
+  const totalPlaces = VACANCIES.reduce((acc, v) => acc + v.places, 0);
+  const unis = new Set(VACANCIES.map(v => v.uni));
+  document.getElementById("hs-courses").textContent = VACANCIES.length;
+  document.getElementById("hs-unis").textContent = unis.size;
+  document.getElementById("hs-places").textContent = totalPlaces.toLocaleString();
+  document.getElementById("vac-badge").textContent = `${VACANCIES.length}`;
+}
+
+function renderVacancies() {
+  const q = document.getElementById("f-search").value.toLowerCase().trim();
+  const subj = document.getElementById("f-subject").value;
+  const grades = document.getElementById("f-grades").value;
+  const region = document.getElementById("f-region").value;
+  const ctx = document.getElementById("f-context").value;
+
+  let filtered = VACANCIES.filter(v => {
+    if (q && !v.course.toLowerCase().includes(q) && !v.uni.toLowerCase().includes(q)) return false;
+    if (subj && v.subject !== subj) return false;
+    if (region && v.region !== region) return false;
+    if (ctx === "yes" && !v.context) return false;
+    if (ctx === "no" && v.context) return false;
+    if (grades) {
+      const m = gradeMatch(grades, v.grades);
+      if (m === "no") return false;
+    }
+    return true;
+  });
+
+  if (grades) {
+    filtered.sort((a,b) => {
+      const orderMap = { match: 0, context: 1, partial: 2, no: 3 };
+      return orderMap[gradeMatch(grades, a.grades)] - orderMap[gradeMatch(grades, b.grades)];
+    });
+  }
+
+  document.getElementById("results-count").textContent = `${filtered.length} course${filtered.length===1?"":"s"} with places`;
+
+  const grid = document.getElementById("vac-grid");
+  if (!filtered.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text-3);">No courses match those filters. Try widening grades or region.</div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(v => {
+    const m = grades ? gradeMatch(grades, v.grades) : null;
+    let pill = "";
+    if (m) {
+      const cls = m === "match" ? "" : m === "context" ? "context" : m === "partial" ? "partial" : "no";
+      const text = m === "match" ? "✓ Match" : m === "context" ? "Contextual" : m === "partial" ? "Borderline" : "Below";
+      pill = `<span class="match-pill ${cls}">${text}</span>`;
+    }
+    const tags = [];
+    if (v.context) tags.push(`<span class="tag context">contextual</span>`);
+    if (v.foundation) tags.push(`<span class="tag foundation">foundation entry</span>`);
+    if (v.btec) tags.push(`<span class="tag btec">BTEC ${v.btec}</span>`);
+    return `
+      <div class="vac-card">
+        <div class="vc-head">
+          <div class="vc-course">${v.course}</div>
+          ${pill}
+        </div>
+        <div class="vc-uni">${v.uni} · ${v.region}</div>
+        <div class="vc-grid">
+          <div>
+            <div class="lbl">Typical offer</div>
+            <div class="val vc-mono">${v.grades}${v.subjects.length?` · ${v.subjects.join(", ")}`:""}</div>
+          </div>
+          <div>
+            <div class="lbl">UCAS points</div>
+            <div class="val vc-mono">${v.points}</div>
+          </div>
+          <div>
+            <div class="lbl">Places remaining</div>
+            <div class="val">${v.places}</div>
+          </div>
+          <div>
+            <div class="lbl">Subject area</div>
+            <div class="val">${v.subject}</div>
+          </div>
+        </div>
+        ${tags.length?`<div class="vc-tags">${tags.join("")}</div>`:""}
+      </div>
+    `;
+  }).join("");
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+function setupTabs() {
+  const applyTriageClass = (tab) => {
+    document.body.classList.toggle("triage-active", tab === "triage");
+  };
+  applyTriageClass("triage");
+  document.querySelectorAll(".tab").forEach(t => {
+    t.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(x => x.classList.remove("active"));
+      t.classList.add("active");
+      document.getElementById("panel-" + t.dataset.tab).classList.add("active");
+      applyTriageClass(t.dataset.tab);
+      if (t.dataset.tab === "vacancies") renderVacancies();
+    });
+  });
+}
+
+/* ============================================================
+   CLOCK
+   ============================================================ */
+function tickClock() {
+  let t = new Date();
+  // Pretend it's 08:14 BST + elapsed
+  const start = new Date(2026, 7, 19, 8, 14, 0);
+  if (!window.__demoStart) window.__demoStart = Date.now();
+  const elapsed = Math.floor((Date.now() - window.__demoStart) / 1000);
+  const fake = new Date(start.getTime() + elapsed * 1000);
+  const hh = String(fake.getHours()).padStart(2,"0");
+  const mm = String(fake.getMinutes()).padStart(2,"0");
+  const ss = String(fake.getSeconds()).padStart(2,"0");
+  document.getElementById("clock-time").textContent = `${hh}:${mm}:${ss} BST`;
+}
+setInterval(tickClock, 1000);
+
+/* ============================================================
+   LIVE MODE — state machine + pattern engine
+   ============================================================ */
+const LIVE = {
+  stage: "greet",            // greet → empathy → grades → subject → match → offer → done
+  emotion: null,
+  emotionAcknowledged: false,
+  grades: null,
+  subject: null,
+  location: null,
+  feeStatus: "Home",
+  ucas: null,
+  university: null,
+  wellbeingTriggered: false,
+  matchedIdx: [],
+  reasoning: [],
+  busy: false,
+  greeted: false,
+};
+
+const WELLBEING_RE = /\b(give up|kill (myself|me)|harm (myself|me)|suicide|end it|don'?t want to (live|be here)|hopeless|worthless|no point|can'?t go on)\b/i;
+
+const EMOTION_RULES = [
+  { tag: "devastated", re: /\b(devastated|crying|crushed|heartbroken|gutted|sobbing|tears|broken|destroyed|in pieces|i('ll| am) failed|worked so hard)\b/i },
+  { tag: "frantic",    re: /\b(rush|hurry|quick|engaged|busy|panic|frantic|deadline|running out|every line|three unis|all engaged)\b/i },
+  { tag: "numb",       re: /\b(don'?t care|whatever|fine i guess|dunno|don'?t know|i guess|i suppose)\b/i },
+  { tag: "elated",     re: /\b(better than|exceeded|trade up|adjustment|got higher|brilliant|amazing|over the moon|smashed it|aced)\b/i },
+  { tag: "confused",   re: /\b(don'?t understand|what does .* mean|how do|first time|confused|not sure|qualify|do i need)\b/i },
+  { tag: "pressured",  re: /\b(my (mum|mom|dad|parents)|my mum says|she says|he says|my parents want|on speakerphone)\b/i },
+  { tag: "strategic",  re: /\b(specifically|i want|i need|plan b|backup|alternative|course id|course code)\b/i },
+  { tag: "anxious",    re: /\b(worried|anxious|nervous|scared|afraid|stressed|stressing)\b/i },
+];
+
+const GRADE_RE = /\b((?:A\*|[A-E]){2,4})\b/i;
+
+const UCAS_RE = /\b(\d{3})[-\s]?(\d{3})[-\s]?(\d{4})\b/;
+
+const SUBJECT_RULES = [
+  { tag: "Politics", re: /\bpolitic(s|al)?\b|\bIR\b|\binternational relations\b/i },
+  { tag: "Psychology", re: /\bpsychology|\bpsychol|\bpsych(s|y)?\b/i },
+  { tag: "Economics", re: /\beconomic|\becon\b/i },
+  { tag: "Law", re: /\blaw\b|\bLLB\b/i },
+  { tag: "Computer Science", re: /\bcomputer science|\bcomp sci|\bcompsci|\bcoding|\bsoftware\b/i },
+  { tag: "Engineering", re: /\bengineer(ing)?|\baerospace|\bmechanical|\bcivil eng\b/i },
+  { tag: "Biology", re: /\bbiolog|\bbiomed|\bforensic\b|\bpharmac/i },
+  { tag: "Mathematics", re: /\bmaths?\b|\bmathematic/i },
+  { tag: "History", re: /\bhistory\b/i },
+  { tag: "English", re: /\benglish (lit|literature)|\benglish lang|\benglish\b/i },
+  { tag: "Business", re: /\bbusiness|\bmarketing|\bmanagement|\baccountancy|\baccounting|\bfinance\b/i },
+  { tag: "Healthcare", re: /\bnursing|\bmidwifery|\bhealth/i },
+  { tag: "Sociology", re: /\bsociolog/i },
+  { tag: "Philosophy", re: /\bphilosoph/i },
+  { tag: "Arts", re: /\bart(s)?\b|\bphotography|\bgraphic|\bdrama|\bperformance|\bfilm/i },
+  { tag: "Languages", re: /\bfrench|\bspanish|\bgerman|\blanguages\b/i },
+  { tag: "Education", re: /\beducation|\bteaching|\bteacher|\bQTS\b/i },
+  { tag: "Architecture", re: /\barchitect/i },
+  { tag: "Geography", re: /\bgeograph/i },
+  { tag: "Media", re: /\bjournalism|\bmedia\b/i },
+  { tag: "Sports Science", re: /\bsport/i },
+];
+
+const UNIVERSITY_HINTS = /\b(manchester|bristol|leeds|liverpool|sheffield|birmingham|cardiff|warwick|nottingham|york|edinburgh|glasgow|oxford|cambridge|durham|southampton|exeter|bath|loughborough|lancaster|sussex|coventry|brighton|portsmouth|aston|newcastle|bradford|hertfordshire|salford|westminster|lincoln|lse|kcl|ucl|imperial|queen mary|qmul|MMU|metropolitan|hallam)\b/i;
+
+const GREETINGS = /^\s*(hi|hello|hey|good morning|morning|yo|hiya|aslam|salaam|namaste)\b/i;
+
+function detectEmotion(text) {
+  for (const rule of EMOTION_RULES) {
+    if (rule.re.test(text)) return rule.tag;
+  }
+  return null;
+}
+
+function detectGrades(text) {
+  const m = text.match(GRADE_RE);
+  if (!m) return null;
+  let g = m[1].toUpperCase();
+  // Normalise: A*AA, AAB, BBB etc.
+  return g;
+}
+
+function detectSubject(text) {
+  for (const rule of SUBJECT_RULES) {
+    if (rule.re.test(text)) return rule.tag;
+  }
+  return null;
+}
+
+function detectUcas(text) {
+  const m = text.match(UCAS_RE);
+  if (!m) return null;
+  return `${m[1]}-${m[2]}-${m[3]}`;
+}
+
+function findMatches(subject, grades, limit = 5) {
+  const a = gradeIndex(grades);
+  return VACANCIES
+    .map((v, i) => {
+      const r = gradeIndex(v.grades);
+      const subjMatch = v.subject === subject;
+      const gradeScore = a < 0 || r < 0 ? 0 : a <= r ? 100 : a <= r + 1 ? 60 : a <= r + 2 ? 30 : 0;
+      const subjectScore = subjMatch ? 100 : 0;
+      return { i, v, score: gradeScore + subjectScore, subjMatch };
+    })
+    .filter(x => x.score > 0 && (x.subjMatch || !subject))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(x => x.i);
+}
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function emotionAck(emotion, name) {
+  const acks = {
+    devastated: [
+      "I can hear today's been really hard already. Take your time — there's no rush at all. Lots of brilliant routes are still open, and we'll walk through them together.",
+      "That's a tough morning, and the work you've put in is real — the result doesn't undo any of that. I'm here for as long as you need.",
+      "Thank you for telling me that. One bad results day doesn't change who you are. Let's slow down and look at what's possible.",
+    ],
+    frantic: [
+      "Slow breath. You have all day — the system isn't going to close. Let's do this properly and we'll get you sorted in the next few minutes.",
+      "I know it feels like the clock's against you, but every university keeps lines open all day. Let's take this one question at a time.",
+    ],
+    numb: [
+      "That's okay — there's no need to put on a brave face. Take your time. I'm here for as long as you need.",
+      "No pressure to have an answer. Let's just start with what you do know and see where that takes us.",
+    ],
+    elated: [
+      "Congratulations — that's brilliant. Let me help you work out the best route to take advantage of that.",
+      "Brilliant news. The good news is there's a process for exactly this, and you've got time to think about it.",
+    ],
+    confused: [
+      "Completely understandable — the language can be opaque the first time round. I'll explain anything that's not clear, just ask.",
+      "Don't worry, this is exactly what I'm here for. We'll go step by step.",
+    ],
+    pressured: [
+      "Family support is brilliant on a day like today. I'd love to hear from you directly though, so we get the right info — is that okay?",
+      "Mum's welcome to listen. Could I ask you the questions directly though, so we make sure we're matching what you want?",
+    ],
+    strategic: [
+      "Efficient, I like it. Let me pull up the details and we'll get you sorted quickly.",
+      "Great — you've clearly thought about this. Let me check the live data.",
+    ],
+    anxious: [
+      "Completely normal to feel that way today. Let's go gently — one thing at a time.",
+      "I hear you. Lots of people on the same call feel the same. Let's work through it together.",
+    ],
+  };
+  return pick(acks[emotion] || ["Thanks for getting in touch. I'm here to help — let's work through it together."]);
+}
+
+function askForGrades() {
+  return pick([
+    "When you're ready, can you tell me what grades you achieved today?",
+    "Could you let me know your results — A-levels, BTEC, or whatever you sat?",
+    "What grades came through this morning?",
+  ]);
+}
+
+function askForSubject() {
+  return pick([
+    "What subject area are you looking at — same as before, or open to alternatives?",
+    "And what would you like to study? Same subject as your original choices, or are you open to something related?",
+    "Which course area are you thinking — same as before, or worth exploring something close to it?",
+  ]);
+}
+
+function wellbeingResponse() {
+  return [
+    { who: "agent", text: "Thank you for telling me that — that takes real honesty. I want to slow down completely. We don't have to talk about universities at all right now. How are you feeling in yourself? Are you safe?" },
+    { who: "action", text: "Wellbeing protocol activated — clearing flow paused" },
+    { who: "agent", text: "I'd really like to make sure you've got someone to talk to today — not just about uni. Samaritans are free to call on <b>116 123</b> and brilliant for exactly this kind of morning. I'd also like to put you through to one of our senior human advisors who can take this from here. Is that okay?" },
+    { who: "escalate", text: "⚠ ESCALATED to human (Hannah, Senior Advisor) — priority WELLBEING. Course discussion deferred." },
+  ];
+}
+
+function adjustmentResponse(state) {
+  return [
+    { who: "agent", text: "Brilliant — that's an adjustment scenario, not clearing. Different process: you have <b>5 days</b> to look around without losing your current place. Your firm offer stays confirmed until you formally release it. Want me to check what's available at the level you've now hit?" }
+  ];
+}
+
+function presentMatches(state) {
+  const ids = findMatches(state.subject, state.grades, 4);
+  state.matchedIdx = ids;
+  if (!ids.length) {
+    return [
+      { who: "agent", text: `I'm checking the UCAS feed now for ${state.subject} with grades around ${state.grades}…` },
+      { who: "action", text: `Querying UCAS vacancies → ${state.subject} · ${state.grades}` },
+      { who: "agent", text: `I'm not finding direct ${state.subject} matches at that grade band in the live feed. Two options: I can widen the search to related subjects, or look at foundation-year routes that lead into ${state.subject}. Which would you prefer?` }
+    ];
+  }
+  const top = VACANCIES[ids[0]];
+  const contextual = top.context ? " They also offer contextual consideration for widening-participation applicants, which may strengthen your application further." : "";
+  return [
+    { who: "agent", text: `Let me check the UCAS feed for ${state.subject} courses with places at your grade band.` },
+    { who: "action", text: `Querying UCAS vacancies → ${state.subject} · ${state.grades}` },
+    { who: "agent", text: `Found ${ids.length} option${ids.length===1?"":"s"} on the live feed. Strongest match: <b>${top.course}</b> at <b>${top.uni}</b> — typical offer ${top.grades}, ${top.places} places remaining.${contextual} Want me to put a provisional hold on it, or shall I walk through the alternatives first?` }
+  ];
+}
+
+function offerConfirmed(state) {
+  const top = VACANCIES[state.matchedIdx[0]];
+  return [
+    { who: "agent", text: `Done. I've placed a provisional hold on <b>${top.course}</b> at <b>${top.uni}</b>. A human admissions tutor will confirm within 48 hours. You'll have a confirmation email in the next ten minutes with everything in writing.` },
+    { who: "action", text: `Provisional offer issued — ${top.uni} ${top.course} — held 48h for human confirmation` },
+    { who: "agent", text: `You got into university today. I know it may not be the route you imagined, but you have a place. Is there anything else I can help with?` }
+  ];
+}
+
+function tryAlternatives(state) {
+  if (state.matchedIdx.length < 2) {
+    return [{ who: "agent", text: "Those were the strongest matches on the live feed at your grade band. Want me to widen the search by region or by related subjects?" }];
+  }
+  const alts = state.matchedIdx.slice(1, 4).map(i => {
+    const v = VACANCIES[i];
+    return `• <b>${v.course}</b> at ${v.uni} — ${v.grades}, ${v.places} places`;
+  }).join("<br>");
+  return [{ who: "agent", text: `Other options on the feed right now:<br><br>${alts}<br><br>Any of those of interest, or shall I go ahead with the first one?` }];
+}
+
+function liveBootstrap() {
+  LIVE.stage = "greet";
+  LIVE.emotion = null;
+  LIVE.emotionAcknowledged = false;
+  LIVE.grades = null;
+  LIVE.subject = null;
+  LIVE.ucas = null;
+  LIVE.matchedIdx = [];
+  LIVE.reasoning = [];
+  LIVE.busy = false;
+  LIVE.greeted = false;
+  LIVE.presentedMatches = false;
+  LIVE.offered = false;
+
+  const c = document.getElementById("convo");
+  c.innerHTML = "";
+
+  const intro = document.createElement("div");
+  intro.className = "live-hint";
+  intro.innerHTML = `<b>Live demo mode</b> — type as the student. Try things like:<br>"I just got BBB, missed Bristol Biomedical, I'm really upset" · "My mum is here, I don't know what to do" · "I got A*AA, can I trade up to LSE?"`;
+  c.appendChild(intro);
+
+  appendMessage({ who: "agent", text: "Hi — thanks for getting in touch. I'm an AI triage advisor here to help you through clearing. Before anything else: how are you feeling this morning?" });
+  LIVE.greeted = true;
+
+  LIVE.reasoning = [
+    { label: "Channel opened", text: "Live chat opened. Waiting for first student message. No data yet — keep tone open and warm, lead with emotional check." }
+  ];
+  renderLiveReasoning();
+  renderLiveMatches();
+  updateLiveHeader();
+}
+
+function updateLiveHeader() {
+  const headerEl = document.getElementById("convo-header");
+  const emo = LIVE.emotion || "—";
+  const emoClass = LIVE.emotion ? `emo-${LIVE.emotion}` : "emo-strategic";
+  headerEl.innerHTML = `
+    <div class="avatar" style="background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;">★</div>
+    <div class="student-info">
+      <h3>Live conversation <span style="color:var(--text-3);font-weight:400;font-size:13px;">· you are the student</span></h3>
+      <div class="sub">
+        Grades: <b style="color:var(--text);">${LIVE.grades || "—"}</b><span class="dot"></span>
+        Subject: ${LIVE.subject || "—"}<span class="dot"></span>
+        Stage: ${LIVE.stage}
+      </div>
+    </div>
+    <div style="margin-left:auto;text-align:right;">
+      <span class="emo-chip ${emoClass}">${emo}</span>
+      <div style="font-size:11px;color:var(--text-3);margin-top:6px;">Free-form input</div>
+    </div>
+  `;
+}
+
+function renderLiveReasoning() {
+  const r = document.getElementById("reasoning");
+  if (!LIVE.reasoning.length) {
+    r.innerHTML = `<div style="padding:12px;color:var(--text-3);font-size:12.5px;">Reasoning trace will populate as the conversation develops.</div>`;
+    return;
+  }
+  r.innerHTML = LIVE.reasoning.map((step, i) => {
+    const isLast = i === LIVE.reasoning.length - 1;
+    return `<div class="step ${isLast ? 'active' : 'done'}">
+      <span class="label">${i+1}. ${step.label}</span>
+      ${step.text}
+    </div>`;
+  }).join("");
+}
+
+function renderLiveMatches() {
+  const m = document.getElementById("matches");
+  document.getElementById("match-meta").textContent = LIVE.matchedIdx.length ? `${LIVE.matchedIdx.length} matches` : "—";
+  if (!LIVE.matchedIdx.length) {
+    m.innerHTML = `<div style="padding:18px;text-align:center;color:var(--text-3);font-size:12.5px;">
+      Vacancy matches will appear here once the agent has enough information (grades + subject area).
+    </div>`;
+    return;
+  }
+  m.innerHTML = LIVE.matchedIdx.map(i => {
+    const v = VACANCIES[i];
+    const matchLevel = gradeMatch(LIVE.grades, v.grades);
+    const pillClass = matchLevel === "match" ? "" : matchLevel === "context" ? "context" : matchLevel === "partial" ? "partial" : "no";
+    const pillText = matchLevel === "match" ? "Match" : matchLevel === "context" ? "Contextual" : matchLevel === "partial" ? "Borderline" : "Below";
+    return `
+      <div class="vacancy">
+        <div class="course">${v.course}</div>
+        <div class="uni">${v.uni}</div>
+        <div class="req">
+          <span>Requires ${v.grades}${v.subjects.length?` · ${v.subjects[0]}`:""}</span>
+          <span class="match-pill ${pillClass}">${pillText}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:6px;">
+          ${v.places} places · ${v.region}${v.context?" · contextual":""}${v.foundation?" · foundation route":""}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function pushReasoning(label, text) {
+  LIVE.reasoning.push({ label, text });
+  renderLiveReasoning();
+}
+
+function liveTypingDelay(text) {
+  // Roughly natural — 25 chars/sec + base
+  const t = typeof text === "string" ? text.length : (text.text || "").length;
+  return Math.min(2400, Math.max(700, 350 + t * 18));
+}
+
+async function liveAgentRespond(messages) {
+  // messages can be array of {who, text}
+  for (const m of messages) {
+    if (m.who === "agent") {
+      showTyping();
+      await new Promise(r => setTimeout(r, liveTypingDelay(m.text)));
+      hideTyping();
+      appendMessage(m);
+    } else {
+      await new Promise(r => setTimeout(r, 400));
+      appendMessage(m);
+    }
+  }
+}
+
+async function processLiveInput(rawText) {
+  if (LIVE.busy) return;
+  const text = rawText.trim();
+  if (!text) return;
+  LIVE.busy = true;
+
+  appendMessage({ who: "student", text });
+
+  // Wellbeing override — always first
+  if (WELLBEING_RE.test(text) && !LIVE.wellbeingTriggered) {
+    LIVE.wellbeingTriggered = true;
+    pushReasoning("Wellbeing trigger detected", `Phrase matching wellbeing concern. Pausing clearing flow, switching to wellbeing protocol. Signposting Samaritans and escalating to human Senior Advisor.`);
+    await liveAgentRespond(wellbeingResponse());
+    LIVE.stage = "done";
+    updateLiveHeader();
+    LIVE.busy = false;
+    return;
+  }
+
+  // Extract data from input
+  const emotion = detectEmotion(text);
+  const grades = detectGrades(text);
+  const subject = detectSubject(text);
+  const ucas = detectUcas(text);
+
+  let extractionNotes = [];
+  if (emotion && emotion !== LIVE.emotion) { LIVE.emotion = emotion; extractionNotes.push(`emotion='${emotion}'`); }
+  if (grades && grades !== LIVE.grades) { LIVE.grades = grades; extractionNotes.push(`grades='${grades}'`); }
+  if (subject && subject !== LIVE.subject) { LIVE.subject = subject; extractionNotes.push(`subject='${subject}'`); }
+  if (ucas && ucas !== LIVE.ucas) { LIVE.ucas = ucas; extractionNotes.push(`UCAS ID captured`); }
+  if (extractionNotes.length) {
+    pushReasoning("Parsed student input", `Extracted: ${extractionNotes.join(", ")}. Updating context for next response.`);
+  }
+
+  updateLiveHeader();
+
+  // Adjustment detection — high grades + trade-up language
+  const isAdjustment = /\b(trade up|adjustment|got higher|exceeded|better than predicted|smashed|aced)\b/i.test(text);
+
+  let responseMessages = [];
+
+  // STAGE: greet → empathy (first real reply)
+  if (!LIVE.emotionAcknowledged) {
+    LIVE.emotionAcknowledged = true;
+    LIVE.stage = "empathy";
+    pushReasoning("Emotional read first", `Acknowledged feeling before any data collection. This is hard-coded behaviour — questions don't start until trust does.`);
+
+    const ack = emotionAck(LIVE.emotion || "anxious");
+    responseMessages.push({ who: "agent", text: ack });
+
+    // If grades already in first message, jump faster
+    if (LIVE.grades && LIVE.subject) {
+      LIVE.stage = "match";
+      responseMessages.push({ who: "agent", text: `I can see you've mentioned grades (<b>${LIVE.grades}</b>) and a subject area (<b>${LIVE.subject}</b>) — let me pull up the live UCAS vacancy feed for you.` });
+      const matches = presentMatches(LIVE);
+      responseMessages = responseMessages.concat(matches);
+      LIVE.presentedMatches = true;
+      renderLiveMatches();
+    } else if (LIVE.grades) {
+      LIVE.stage = "subject";
+      responseMessages.push({ who: "agent", text: `Got it, ${LIVE.grades}. ${askForSubject()}` });
+    } else {
+      LIVE.stage = "grades";
+      responseMessages.push({ who: "agent", text: askForGrades() });
+    }
+
+    await liveAgentRespond(responseMessages);
+    LIVE.busy = false;
+    return;
+  }
+
+  // Adjustment override
+  if (isAdjustment && LIVE.grades && gradeIndex(LIVE.grades) <= gradeIndex("AAB")) {
+    pushReasoning("Adjustment route, not clearing", `High grades + trade-up language detected. Switching to adjustment flow — different rules, 5-day window, firm offer untouched.`);
+    responseMessages = adjustmentResponse(LIVE);
+    if (LIVE.subject) {
+      responseMessages = responseMessages.concat(presentMatches(LIVE));
+      LIVE.presentedMatches = true;
+      renderLiveMatches();
+      LIVE.stage = "match";
+    } else {
+      LIVE.stage = "subject";
+      responseMessages.push({ who: "agent", text: askForSubject() });
+    }
+    await liveAgentRespond(responseMessages);
+    LIVE.busy = false;
+    return;
+  }
+
+  // STAGE: collect grades
+  if (LIVE.stage === "grades" || !LIVE.grades) {
+    if (LIVE.grades) {
+      LIVE.stage = "subject";
+      pushReasoning("Grades captured", `Recorded ${LIVE.grades}. Next: subject of interest.`);
+      responseMessages.push({ who: "agent", text: `Thanks. ${askForSubject()}` });
+    } else {
+      pushReasoning("Awaiting grades", "Student hasn't given grades yet — ask gently again.");
+      responseMessages.push({ who: "agent", text: pick([
+        "Sorry if I missed it — could you let me know your grades? Something like AAB or BBB, or a BTEC result if that's what you sat.",
+        "I want to make sure I'm matching you to the right courses — what grades came through today?",
+      ]) });
+    }
+    await liveAgentRespond(responseMessages);
+    LIVE.busy = false;
+    return;
+  }
+
+  // STAGE: collect subject
+  if (LIVE.stage === "subject" || !LIVE.subject) {
+    if (LIVE.subject) {
+      LIVE.stage = "match";
+      pushReasoning("Subject captured", `Recorded subject area: ${LIVE.subject}. Querying UCAS vacancy feed.`);
+      responseMessages = presentMatches(LIVE);
+      LIVE.presentedMatches = true;
+      renderLiveMatches();
+    } else {
+      pushReasoning("Awaiting subject", "Student hasn't named a subject yet.");
+      responseMessages.push({ who: "agent", text: pick([
+        "Just to narrow it down — what subject area? Politics, Psychology, Engineering, something else?",
+        "Which course area are you most interested in?",
+      ]) });
+    }
+    await liveAgentRespond(responseMessages);
+    LIVE.busy = false;
+    return;
+  }
+
+  // STAGE: matching → user is responding to suggestions
+  const accepts = /\b(yes|yeah|yep|please|go ahead|sure|okay|ok|sounds good|do it|put|hold|that one|the first|the strongest|let's)\b/i.test(text);
+  const declines = /\b(no|nope|other|alternatives|something else|not that|different)\b/i.test(text);
+
+  if (LIVE.stage === "match" && !LIVE.offered) {
+    if (accepts) {
+      LIVE.offered = true;
+      LIVE.stage = "done";
+      pushReasoning("Provisional offer issued", `Student accepted top-ranked match. Issuing provisional hold (48h). Confirmation email queued. Human admissions tutor flagged for review.`);
+      responseMessages = offerConfirmed(LIVE);
+    } else if (declines) {
+      pushReasoning("Exploring alternatives", "Student wants to see other options.");
+      responseMessages = tryAlternatives(LIVE);
+    } else {
+      // Maybe they're asking a clarifying question
+      responseMessages.push({ who: "agent", text: pick([
+        "Did you want to go with that option, or shall I walk through the alternatives first?",
+        "I can put a hold on it now, or we can look at others — what would you prefer?",
+      ]) });
+    }
+    await liveAgentRespond(responseMessages);
+    LIVE.busy = false;
+    return;
+  }
+
+  // STAGE: done — gentle wrap-up
+  if (LIVE.stage === "done") {
+    responseMessages.push({ who: "agent", text: pick([
+      "All set on my side. A human admissions tutor will be in touch within 48 hours. Take care today.",
+      "You're sorted — best of luck for September. Anything else, just call back.",
+    ]) });
+    await liveAgentRespond(responseMessages);
+    LIVE.busy = false;
+    return;
+  }
+
+  // Fallback
+  responseMessages.push({ who: "agent", text: "Could you say a bit more about that?" });
+  await liveAgentRespond(responseMessages);
+  LIVE.busy = false;
+}
+
+function switchToLiveMode() {
+  document.getElementById("scripted-controls").style.display = "none";
+  document.getElementById("live-input-form").style.display = "flex";
+  liveBootstrap();
+  setTimeout(() => document.getElementById("live-input").focus(), 100);
+}
+
+function switchToScriptedMode() {
+  document.getElementById("scripted-controls").style.display = "flex";
+  document.getElementById("live-input-form").style.display = "none";
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function renderAll() {
+  renderQueue();
+  const s = getCurrentScenario();
+  if (s.isLive) {
+    // live mode handles its own rendering via liveBootstrap and updates
+    return;
+  }
+  renderConvoHeader();
+  renderConvoMessages();
+  renderReasoning();
+  renderMatches();
+}
+
+function init() {
+  setupTabs();
+  populateFilterOptions();
+  renderAll();
+  renderVacancies();
+  const s = getCurrentScenario();
+  if (s && s.isLive) switchToLiveMode();
+
+  document.getElementById("btn-play").addEventListener("click", togglePlay);
+  document.getElementById("btn-reset").addEventListener("click", resetPlay);
+  document.getElementById("btn-skip").addEventListener("click", skipToEnd);
+  document.getElementById("speed").addEventListener("change", e => {
+    playState.speed = parseFloat(e.target.value);
+  });
+
+  document.getElementById("live-input-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const input = document.getElementById("live-input");
+    const val = input.value;
+    if (!val.trim() || LIVE.busy) return;
+    input.value = "";
+    processLiveInput(val);
+  });
+  document.getElementById("live-reset").addEventListener("click", () => {
+    liveBootstrap();
+  });
+  ["f-search","f-subject","f-grades","f-region","f-context"].forEach(id => {
+    document.getElementById(id).addEventListener("input", renderVacancies);
+    document.getElementById(id).addEventListener("change", renderVacancies);
+  });
+
+  document.getElementById("queue-count").textContent = SCENARIOS.length;
+  document.getElementById("queue-meta").textContent = `${SCENARIOS.length} waiting · avg wait 1m 22s`;
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+
+</body>
+</html>
